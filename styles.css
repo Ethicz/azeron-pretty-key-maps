@@ -420,3 +420,55 @@ body{
 /* snapshot mode for DOM export */
 .stage[data-exporting="1"] { transform: none !important; }
 .stage[data-exporting="1"] .popover { display: none !important; }
+/* Compact icon button */
+.iconToggle{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:38px; height:38px; border-radius:12px;
+  background: linear-gradient(180deg, #1b2446, #121736);
+  border:1px solid var(--edge);
+  color:var(--fg);
+  box-shadow: var(--shadow);
+  cursor:pointer;
+  transition: transform .06s ease, filter .15s ease;
+}
+.iconToggle:hover{ transform:translateY(-1px); filter: brightness(1.06); }
+.iconToggle.on{ outline:2px solid #79a1ff; outline-offset:0; }
+
+/* Compact row spacing for icon bar */
+.iconRow{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+
+/* Bigger title input */
+.titleInputXL{
+  font-size:20px; font-weight:800; letter-spacing:.2px;
+  padding:12px 14px;
+}
+
+/* Tiny label chip to sit next to icon toggles (for Gloss only) */
+.badgeChip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 10px; border-radius:12px;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--edge); color:var(--fg); font-weight:600;
+}
+
+/* Theme compact menu */
+.compactMenuWrap{ position:relative; }
+.compactMenu{
+  position:absolute; top:calc(100% + 8px); right:0; z-index:50;
+  display:none; min-width:260px;
+  background:rgba(18,23,53,.96);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,.45);
+  padding:8px;
+}
+.compactMenu.open{ display:block; }
+.compactMenu .row{ display:flex; gap:8px; align-items:center; margin:6px 0; }
+.compactMenu .btn{ width:100%; }
+.compactMenu .select{ width:100%; }
+.btn.iconLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* space between icon and text */
+  padding: 8px 12px; /* adjust so it doesn’t get too wide */
+  font-size: 14px;   /* slightly smaller if needed */
+}

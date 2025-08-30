@@ -29,6 +29,63 @@ const SmileIcon = ({ size = 16 }) => (
     <path d="M8 15c1.2 1 2.5 1.5 4 1.5s2.8-.5 4-1.5" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
   </svg>
 );
+const LockIcon = ({size=18, on=false})=>(
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <rect x="4" y="10" width="16" height="10" rx="2" stroke="#fff" strokeWidth="2" opacity=".9"/>
+    <path d="M8 10V8a4 4 0 1 1 8 0v2" stroke="#fff" strokeWidth="2" opacity=".9"/>
+    {on ? <circle cx="12" cy="15" r="2" fill="#79a1ff"/> : null}
+  </svg>
+);
+const MultiIcon   = ({size=18})=>(
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="14" height="12" rx="2" stroke="#fff" strokeWidth="2" opacity=".9"/><rect x="7" y="4" width="14" height="12" rx="2" stroke="#fff" strokeWidth="2" opacity=".5"/></svg>
+);
+const SnapIcon    = ({size=18})=>(
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M3 8h6M3 16h6M15 8h6M15 16h6" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity=".9"/><circle cx="12" cy="12" r="2" fill="#79a1ff"/></svg>
+);
+const GridIcon    = ({size=18})=>(
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M3 8h18M3 16h18M8 3v18M16 3v18" stroke="#fff" strokeWidth="2" opacity=".9"/></svg>
+);
+const HashIcon    = ({size=18})=>(
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M9 3L7 21M17 3l-2 18M4 9h16M3 15h16" stroke="#fff" strokeWidth="2"/></svg>
+);
+const InvertIcon  = ({size=18})=>(
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 0 8-8v16a8 8 0 0 1-8-8z" stroke="#fff" strokeWidth="2"/></svg>
+);
+const DiceIcon    = ({size=18})=>(
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#fff" strokeWidth="2"/><circle cx="9" cy="9" r="1.4" fill="#fff"/><circle cx="15" cy="9" r="1.4" fill="#fff"/><circle cx="9" cy="15" r="1.4" fill="#fff"/><circle cx="15" cy="15" r="1.4" fill="#fff"/></svg>
+);
+const ZoomOutIcon = ({size=18})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#fff" strokeWidth="2"/><path d="M8 11h6" stroke="#fff" strokeWidth="2" strokeLinecap="round"/><path d="M20 20l-3-3" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg>);
+const ZoomInIcon  = ({size=18})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#fff" strokeWidth="2"/><path d="M8 11h6M11 8v6" stroke="#fff" strokeWidth="2" strokeLinecap="round"/><path d="M20 20l-3-3" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg>);
+const ResetIcon = ({ size = 18 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const ThemeIcon = ({ size = 18, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+    <g transform="translate(12 12) scale(1.18) translate(-12 -12)" fill={color}>
+      <path d="M16.22 13.96c1.04-3.9-1.44-7.93-5.49-9.01C6.14 3.72-0.36 6.91 1.08 11.01c.48 1.35 1.41 1.67 3.15 1.7h.11c.92.01 1.18.06 1.26.19.12.21.12.55-.01 1.46-.07.43-.09.58-.12.82-.16 1.43.09 2.55 1.02 3.54 2.93 3.15 8.56-.39 9.73-4.78ZM2.97 10.34c-.73-2.06 3.93-4.34 7.24-3.46 3 .8 4.8 3.75 4.05 6.58-.84 3.13-4.78 5.6-6.33 3.93-.48-.52-.6-1.07-.5-1.98.02-.19.05-.33.11-.73.22-1.4.21-2.04-.27-2.82-.6-.97-1.3-1.13-2.94-1.15h-.11c-.97-.01-1.2-.09-1.26-.37Z" />
+      <circle cx="6" cy="8.75" r="1.25" />
+      <circle cx="9.75" cy="8.75" r="1.25" />
+      <circle cx="12.25" cy="11.75" r="1.25" />
+      <circle cx="10.75" cy="15.25" r="1.25" />
+      <path d="M14.37 3.6c.49-.26 1.1-.07 1.36.4l4.1 8.4c.15.31.02.69-.3.86-.3.16-.68.05-.85-.25l-4.71-8.07c-.27-.46-.11-1.07.35-1.34Z" />
+      <path d="M12.54 3.48c.49.91 1.31 1.17 2.09.75.78-.42 1.02-1.25.53-2.18-.55-1.05-1.74-1.99-2.52-1.57-.78.42-.66 1.99-.1 3Zm.88-.47c-.16-.31-.28-.73-.3-1-.02-.27.01-.42.01-.42s.18.09.4.27c.3.24.6.59.76.9.23.42.17.63-.14.79-.31.16-.52.1-.73-.53Z" />
+    </g>
+  </svg>
+);
+const FolderIcon  = ({size=18})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M3 7h6l2 2h10v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="#fff" strokeWidth="2"/></svg>);
+const PasteIcon   = ({size=18})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="7" y="5" width="10" height="14" rx="2" stroke="#fff" strokeWidth="2"/><path d="M9 3h6v2H9z" fill="#fff"/></svg>);
+
+/* Reusable toggle button (icon-only) */
+function IconToggle({on, title, onClick, children}) {
+  return (
+    <button
+      className={`iconToggle ${on ? "on" : ""}`}
+      aria-pressed={!!on}
+      title={title}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
 
 /* =========================
    Robust layout imports
@@ -82,10 +139,60 @@ const BASE = {
   green: "#169447", teal: "#1CB2A6", blue: "#2F5EE0",
   indigo: "#444BE0", violet: "#A247E6", gray: "#495064",
 };
+/* =========================
+   Preset Themes
+   ========================= */
+const THEMES = [
+  { id:"soft_pastel",   name:"Soft Pastel",   cat:"Core",        keys:"#9AD5FF,#B8E1FF,#D8F0FF,#C8FFD9,#FFE6A7,#FFC3C3" },
+  { id:"midnight",      name:"Midnight",      cat:"Core",        keys:"#4A65FF,#3FC4FF,#28E0A5,#FFC857,#FF5E5B,#A28CFF" },
+  { id:"mono_ink",      name:"Mono Ink",      cat:"Core",        keys:"#9FA7B8,#C8CFDC,#6B7385,#B0B9CC,#8892A8,#DDE3F2" },
+
+  { id:"xbox_vibes",         name:"Xbox Vibes",           cat:"Controllers", keys:"#107C10,#3CDB4E,#D04242,#40CCD0,#ECDB33,#3A3A3A" },
+  { id:"ps_vibes",           name:"PlayStation Vibes",    cat:"Controllers", keys:"#00A74F,#D22630,#0072CE,#D82882,#1F1F1F,#FFFFFF" },
+  { id:"switch_neon",        name:"Switch Neon",          cat:"Controllers", keys:"#0AB9E6,#FF3C28,#828282,#0F0F0F,#E6FF00,#1EDC00" },
+
+  { id:"halo_master_chief",  name:"Halo Master Chief",    cat:"Games", keys:"#84926A,#EFB82A,#4C4A45,#CDCFCC,#2C2E2A,#1B1B1B" },
+  { id:"persona5",           name:"Persona 5",            cat:"Games", keys:"#0D0D0D,#D92323,#732424,#8C6723,#F2E852,#FFFFFF" },
+  { id:"cyberpunk_neon",     name:"Cyberpunk Neon",       cat:"Games", keys:"#02D7F2,#F2E900,#007AFF,#EA00D9,#133E7C,#091833" },
+  { id:"zelda_hyrule",       name:"Zelda Hyrule",         cat:"Games", keys:"#0A2E36,#F2D492,#8DA399,#C46F3E,#B22C1B,#D4AF7F" },
+  { id:"mario_classic",      name:"Mario Classic",        cat:"Games", keys:"#E60012,#3B82F6,#FFD500,#8B4513,#FFFFFF,#000000" },
+  { id:"sonic_speed",        name:"Sonic",                cat:"Games", keys:"#0055FF,#F4FF00,#FFFFFF,#000000,#FF6600,#00B3FF" },
+  { id:"portal_test",        name:"Portal",               cat:"Games", keys:"#0088CC,#FF6600,#222222,#DDDDDD,#99D6FF,#FFB380" },
+  { id:"minecraft_over",     name:"Minecraft Overworld",  cat:"Games", keys:"#67B22F,#BFAE92,#523F2E,#F2E08B,#8C764A,#4F6B3A" },
+  { id:"overwatch_ui",       name:"Overwatch UI",         cat:"Games", keys:"#F6BA2D,#34B3E4,#E84C3D,#FFFFFF,#1D1D1D,#8D8D8D" },
+  { id:"tetris_blocks",      name:"Tetris Blocks",        cat:"Games", keys:"#00FFFF,#0000FF,#FF0000,#FFFF00,#FF8000,#008000" },
+  { id:"splatoon_ink",       name:"Splatoon Ink",         cat:"Games", keys:"#FF00BB,#00FF7F,#7D00FF,#00E5FF,#FFE600,#111111" },
+  { id:"metroid_varia",      name:"Metroid Varia",        cat:"Games", keys:"#F26D1F,#00D1B2,#3F3F46,#A2A2A2,#0E7490,#F2F2F2" },
+  { id:"hollow_knight",      name:"Hollow Knight",        cat:"Games", keys:"#0C1A24,#3AA0C8,#6EC1E4,#E6F1F4,#384B59,#FFFFFF" },
+
+  { id:"cb_okabe_ito",  name:"Colorblind Okabe Ito",      cat:"Color Vision", keys:"#E69F00,#56B4E9,#009E73,#F0E442,#0072B2,#CC79A7" },
+  { id:"cb_tol_bright", name:"Colorblind Tol Bright",     cat:"Color Vision", keys:"#4477AA,#66CCEE,#228833,#CCBB44,#EE6677,#AA3377" },
+  { id:"cb_tol_muted",  name:"Colorblind Tol Muted",      cat:"Color Vision", keys:"#332288,#88CCEE,#44AA99,#117733,#999933,#DDCC77" },
+  { id:"cb_deuter",     name:"Deuteranopia High Contrast",cat:"Color Vision", keys:"#000000,#FFFFFF,#0072B2,#E69F00,#56B4E9,#CC79A7" },
+  { id:"cb_protan",     name:"Protanopia High Contrast",  cat:"Color Vision", keys:"#000000,#FFFFFF,#0072B2,#E69F00,#56B4E9,#009E73" },
+  { id:"cb_tritan",     name:"Tritanopia High Contrast",  cat:"Color Vision", keys:"#000000,#FFFFFF,#E69F00,#009E73,#D55E00,#CC79A7" },
+  { id:"cb_achromat",   name:"Achromat High Contrast",    cat:"Color Vision", keys:"#000000,#222222,#555555,#888888,#BBBBBB,#FFFFFF" }
+];
 
 /* =========================
    Helpers
    ========================= */
+   function useLongPress(onLongPress, onClick, { delay = 600 } = {}) {
+  const timeout = React.useRef();
+  const start = (e) => {
+    timeout.current = setTimeout(() => onLongPress(e), delay);
+  };
+  const clear = (e, triggerClick = true) => {
+    clearTimeout(timeout.current);
+    if (triggerClick) onClick(e);
+  };
+  return {
+    onPointerDown: start,
+    onPointerUp: (e) => clear(e, true),
+    onPointerLeave: (e) => clear(e, false)
+  };
+}
+
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 function normalizeHex(c, fallback="#777777"){
   if(!c || typeof c !== "string") return fallback;
@@ -100,6 +207,145 @@ function seededRandomColor(seed) {
   const keys = Object.keys(BASE);
   const idx = Math.abs([...String(seed)].reduce((a,c)=>a + c.charCodeAt(0), 0)) % keys.length;
   return BASE[keys[idx]];
+}
+
+// === Contrast utilities (WCAG-ish) ===
+const LIGHT_TEXT_CUTOFF = 0.70; // tweak 0.85–0.92 to taste
+
+function hexToRgb(hex) {
+  const h = normalizeHex(hex);
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
+  if (!m) return { r: 119, g: 119, b: 119 };
+  return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+}
+function relLuminance(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const toLin = v => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  };
+  const R = toLin(r), G = toLin(g), B = toLin(b);
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+// Only flip to black on VERY light backgrounds
+function bestTextOn(bgHex) {
+  const L = relLuminance(bgHex);
+  return L >= LIGHT_TEXT_CUTOFF ? "#111" : "#FFFFFF";
+}
+function textPair(bgHex) {
+  const label = bestTextOn(bgHex);
+  const sub   = label === "#FFFFFF" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.72)";
+  return { label, sub };
+}
+
+
+/* =========================
+   Themes → map (including MU/MD)
+   ========================= */
+function applyTheme(map, layout, themeId){
+  const t = THEMES.find(x => x.id === themeId);
+  if (!t) return map;
+
+  const cols = t.keys.split(",").map(c => normalizeHex(c));
+  if (cols.length === 0) return map;
+
+  // keys in layout
+  const ids = Object.entries(layout)
+    .filter(([, p]) => !p.blank && !p.analog && !p.split)
+    .map(([id]) => id)
+    .sort((a, b) => Number(a) - Number(b));
+
+  const next = { ...map };
+  ids.forEach((id, i) => {
+    next[id] = { ...(next[id] || {}), color: cols[i % cols.length] };
+  });
+
+  // Also theme Mouse Up / Mouse Down halves using first two palette entries
+  const muCol = cols[0] ?? BASE.teal;
+  const mdCol = cols[(cols.length > 1 ? 1 : 0)] ?? BASE.indigo;
+  next.MU = { ...(next.MU || { label: "Mouse Up" }), color: muCol };
+  next.MD = { ...(next.MD || { label: "Mouse Down" }), color: mdCol };
+
+  return next;
+}
+
+/* =========================
+   Azeron import code → labels
+   ========================= */
+function tryDecodePlainJSON(b64){
+  try{ return JSON.parse(atob(b64.trim())); }catch{ return null; }
+}
+function findButtonBuckets(obj, buckets = []) {
+  if (!obj || typeof obj !== "object") return buckets;
+  const isBucket = Array.isArray(obj) || Object.values(obj).some(v => v && typeof v === "object");
+  if (isBucket) {
+    const sample = Array.isArray(obj) ? obj[0] : Object.values(obj)[0];
+    if (sample && typeof sample === "object") {
+      const hasKeyish = "id" in sample || "key" in sample || "button" in sample || "name" in sample || "label" in sample || "title" in sample;
+      if (hasKeyish) buckets.push(obj);
+    }
+  }
+  Object.values(obj).forEach(v => v && typeof v === "object" && findButtonBuckets(v, buckets));
+  return buckets;
+}
+const entryToRecord = (e) => {
+  if (!e || typeof e !== "object") return null;
+  const id = e.id ?? e.key ?? e.button ?? e.name ?? e.title ?? null;
+  const label = e.label ?? e.title ?? e.name ?? e.binding ?? e.action ?? null;
+  const sub = e.sub ?? e.subtitle ?? e.secondary ?? "";
+  const emoji = e.emoji ?? "";
+  const color = e.color ?? null;
+  return { id, label, sub, emoji, color };
+};
+function applyVendorToMap(vendorJSON, layout, prevMap){
+  const next = { ...prevMap };
+  const ids = Object.entries(layout)
+    .filter(([,p])=>!p.blank && !p.analog && !p.split)
+    .map(([id])=>id).sort((a,b)=>Number(a)-Number(b));
+
+  const buckets = findButtonBuckets(vendorJSON);
+  if (!buckets.length) return next;
+
+  const bucket = buckets.sort((a,b)=>(Array.isArray(b)?b.length:Object.keys(b).length)-(Array.isArray(a)?a.length:Object.keys(a).length))[0];
+  const entries = Array.isArray(bucket) ? bucket : Object.entries(bucket).map(([kid,v])=>({ id:kid, ...v }));
+
+  // 1) direct id match
+  let matched = 0;
+  entries.forEach(en=>{
+    const rec = entryToRecord(en); if(!rec || !rec.id) return;
+    if (ids.includes(String(rec.id))) {
+      next[String(rec.id)] = {
+        ...(next[String(rec.id)]||{}),
+        ...(rec.label ? {label:rec.label}:{}),
+        ...(rec.sub ? {sub:rec.sub}:{}),
+        ...(rec.emoji ? {emoji:rec.emoji}:{}),
+        ...(rec.color ? {color: normalizeHex(rec.color)}:{}),
+      };
+      matched++;
+    }
+  });
+  // 2) fallback: order
+  if (matched < Math.max(2, Math.floor(ids.length*0.25))) {
+    const records = entries.map(entryToRecord).filter(Boolean);
+    for(let i=0;i<Math.min(ids.length,records.length);i++){
+      const id = ids[i], rec = records[i];
+      next[id] = {
+        ...(next[id]||{}),
+        ...(rec.label ? {label:rec.label}:{}),
+        ...(rec.sub ? {sub:rec.sub}:{}),
+        ...(rec.emoji ? {emoji:rec.emoji}:{}),
+        ...(rec.color ? {color: normalizeHex(rec.color)}:{}),
+      };
+    }
+  }
+  return next;
+}
+async function importAzeronCode(b64, layout, setMap){
+  if (!b64 || typeof b64 !== "string") return false;
+  let vendor = tryDecodePlainJSON(b64);
+  if (!vendor){ alert("Couldn’t decode the code. Make sure it’s the full export string."); return false; }
+  setMap(prev => applyVendorToMap(vendor, layout, prev));
+  return true;
 }
 
 /* =========================
@@ -138,7 +384,7 @@ function defaultKeymapForLayout(layout){
 }
 
 /* =========================
-   Canvas helpers
+   Canvas helpers (PNG)
    ========================= */
 const rr=(ctx,x,y,w,h,r)=>{ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
 function drawKeyBase(ctx,x,y,w,h,color){
@@ -147,7 +393,8 @@ function drawKeyBase(ctx,x,y,w,h,color){
   ctx.lineWidth=1.2; ctx.strokeStyle="#222"; ctx.stroke();
 }
 function drawKey(ctx,x,y,w,h,data){
-  drawKeyBase(ctx,x,y,w,h,data?.color);
+  const col = normalizeHex(data?.color || BASE.blue);
+  drawKeyBase(ctx,x,y,w,h,col);
 
   // Cover image
   if(data?.image && data?.imageMode === "cover" && data.__img){
@@ -168,13 +415,14 @@ function drawKey(ctx,x,y,w,h,data){
   // Optional emoji
   if (data?.emoji) {
     ctx.font = "24px Montserrat";
-    ctx.fillStyle = "#111";
+    ctx.fillStyle = bestTextOn(col);
     ctx.fillText(data.emoji, x+w-30, y+30);
   }
 
   // Label — shrink-to-fit
   let size = 18;
   const label = data?.label || "Action";
+  const pair = textPair(col);
   ctx.font = `800 ${size}px Montserrat`;
   let metrics = ctx.measureText(label);
   while (metrics.width > w - 20 && size > 10) {
@@ -182,7 +430,7 @@ function drawKey(ctx,x,y,w,h,data){
     ctx.font = `800 ${size}px Montserrat`;
     metrics = ctx.measureText(label);
   }
-  ctx.fillStyle = "#111";
+  ctx.fillStyle = pair.label;
   ctx.fillText(label, x+10, y+h-38);
 
   // Sub — shrink-to-fit
@@ -195,10 +443,9 @@ function drawKey(ctx,x,y,w,h,data){
     ctx.font = `600 ${size}px Montserrat`;
     metrics = ctx.measureText(sub);
   }
-  ctx.fillStyle = "#444";
+  ctx.fillStyle = pair.sub;
   ctx.fillText(sub, x+10, y+h-16);
 }
-
 function drawSplit(ctx,x,y,w,h,up,down){
   const upC   = normalizeHex(up.color,   BASE.teal);
   const downC = normalizeHex(down.color, BASE.indigo);
@@ -207,8 +454,11 @@ function drawSplit(ctx,x,y,w,h,up,down){
   ctx.fillStyle=downC; ctx.fillRect(x,y+h/2,w,h/2);
   ctx.restore();
   ctx.lineWidth=1.2; ctx.strokeStyle="#222"; rr(ctx,x,y,w,h,R); ctx.stroke();
-  ctx.fillStyle="#111"; ctx.font="bold 16px ui-sans-serif";
+
+  ctx.font="bold 16px ui-sans-serif";
+  ctx.fillStyle = bestTextOn(upC);
   ctx.fillText(up.label||"Mouse Up", x+10, y+h/2-10);
+  ctx.fillStyle = bestTextOn(downC);
   ctx.fillText(down.label||"Mouse Down", x+10, y+h-12);
 }
 function drawAnalogMonoline(ctx, x, y){
@@ -229,10 +479,26 @@ function loadImage(url){ return new Promise((res, rej)=>{ const img = new Image(
    SplitWheel and Analog
    ========================= */
 function SplitWheel({ x, y, up, down, gloss, onPick }){
+  const upColor = up?.color || BASE.teal;
+  const downColor = down?.color || BASE.indigo;
   return (
-    <div className={`splitTile ${gloss ? "gloss" : ""}`} style={{ left:x, top:y }} onMouseDown={(e)=>onPick("MW", e)}>
-      <div className="half top" style={{ background: up?.color || BASE.teal }}>{up?.label || "Mouse Up"}</div>
-      <div className="half bottom" style={{ background: down?.color || BASE.indigo }}>{down?.label || "Mouse Down"}</div>
+    <div className={`splitTile ${gloss ? "gloss" : ""}`} style={{ left:x, top:y }} title="Mouse Wheel">
+      <div
+        className="half top"
+        style={{ background: upColor, color: bestTextOn(upColor) }}
+        onMouseDown={(e)=>onPick("MU", e)}
+        onContextMenu={(e)=>{ e.preventDefault(); onPick("MU", e); }}
+      >
+        {up?.label || "Mouse Up"}
+      </div>
+      <div
+        className="half bottom"
+        style={{ background: downColor, color: bestTextOn(downColor) }}
+        onMouseDown={(e)=>onPick("MD", e)}
+        onContextMenu={(e)=>{ e.preventDefault(); onPick("MD", e); }}
+      >
+        {down?.label || "Mouse Down"}
+      </div>
     </div>
   );
 }
@@ -343,6 +609,17 @@ function DevicePicker({ value, onChange }) {
 /* =========================
    Main App
    ========================= */
+   function BottomSheet({ open, onClose, children }) {
+  return createPortal(
+    <div className={`sheet ${open ? "open" : ""}`} onClick={onClose}>
+      <div className="sheetBody" onClick={(e) => e.stopPropagation()}>
+        <div className="handle" />
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
 export default function App(){
   const [profile, setProfile] = useState("cyro");
   const [layout, setLayout]  = useState(() => ({ ...LAYOUTS.cyro }));
@@ -368,14 +645,22 @@ export default function App(){
 
   const [menu, setMenu] = useState(null);
   const canvasRef = useRef(null);
+
+  // Mobile scroll/pinch container + stage refs
+  const stageBoxRef = useRef(null);
   const stageDomRef = useRef(null);
-const stageRef = useRef(null);           // you already had this below, keep only one copy
+  const stageRef = useRef(null);
+  const setStageEl = (el) => { stageDomRef.current = el; stageRef.current = el; };
 
-const setStageEl = el => {               // one place to set both refs
-  stageDomRef.current = el;
-  stageRef.current = el;
-};
-
+  // Mobile flag
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 768px)");
+    const onChange = () => setIsMobile(mql.matches);
+    onChange();
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
 
   const mu = map["MU"] || { label:"Mouse Up", color: BASE.teal };
   const md = map["MD"] || { label:"Mouse Down", color: BASE.indigo };
@@ -395,18 +680,100 @@ const setStageEl = el => {               // one place to set both refs
   };
   const { W: CANVAS_W, H: CANVAS_H } = calcExtents(layout);
 
+  // Fit zoom (responsive)
   useEffect(()=>{
     const ro = new ResizeObserver(()=>{
       const el = containerRef.current; if(!el) return;
-      const avail = el.clientWidth - 24;
-      const z = CANVAS_W > 0 ? Math.max(0.4, Math.min(1, avail / CANVAS_W)) : 1;
+      const pad = 24;
+      const availW = Math.max(200, el.clientWidth  - pad);
+      const availH = Math.max(200, el.clientHeight - pad);
+      const zW = CANVAS_W > 0 ? availW / CANVAS_W : 1;
+      const zH = CANVAS_H > 0 ? availH / CANVAS_H : 1;
+      const z = Math.max(0.35, Math.min(1, Math.min(zW, zH)));
       setFitZoom(z);
     });
     if(containerRef.current) ro.observe(containerRef.current);
     return ()=> ro.disconnect();
-  },[CANVAS_W]);
-  const displayZoom = Math.min(zoom, fitZoom);
-  const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
+  },[CANVAS_W, CANVAS_H]);
+
+  // Mobile pan (1-finger) + pinch (2-finger)
+  useEffect(() => {
+    const box = stageBoxRef.current;
+    if (!box) return;
+
+    if (!isMobile) {
+      box.style.touchAction = "auto";
+      return;
+    }
+    box.style.touchAction = "none";
+
+    const pointers = new Map();
+    let lastDist = 0;
+    let isPanning = false;
+    let panStart = { x: 0, y: 0, sx: 0, sy: 0 };
+
+    const dist = () => {
+      const a = [...pointers.values()];
+      if (a.length < 2) return 0;
+      const [p1, p2] = a;
+      const dx = p1.x - p2.x, dy = p1.y - p2.y;
+      return Math.hypot(dx, dy);
+    };
+
+    const onDown = (e) => {
+      box.setPointerCapture?.(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (pointers.size === 1) {
+        isPanning = true;
+        panStart = { x: e.clientX, y: e.clientY, sx: box.scrollLeft, sy: box.scrollTop };
+      } else if (pointers.size === 2) {
+        lastDist = dist();
+      }
+    };
+
+    const onMove = (e) => {
+      if (!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (pointers.size === 1 && isPanning) {
+        const dx = panStart.x - e.clientX;
+        const dy = panStart.y - e.clientY;
+        box.scrollLeft = panStart.sx + dx;
+        box.scrollTop  = panStart.sy + dy;
+      } else if (pointers.size >= 2) {
+        const d = dist();
+        if (lastDist) {
+          const factor = d / lastDist;
+          setZoom(z => clamp(+((z * factor)).toFixed(3), 0.35, 2));
+        }
+        lastDist = d;
+      }
+    };
+
+    const onUp = (e) => {
+      pointers.delete(e.pointerId);
+      box.releasePointerCapture?.(e.pointerId);
+      if (pointers.size < 2) lastDist = 0;
+      if (pointers.size === 0) isPanning = false;
+    };
+
+    box.addEventListener("pointerdown", onDown, { passive: false });
+    box.addEventListener("pointermove", onMove, { passive: false });
+    box.addEventListener("pointerup", onUp);
+    box.addEventListener("pointercancel", onUp);
+
+    return () => {
+      box.removeEventListener("pointerdown", onDown);
+      box.removeEventListener("pointermove", onMove);
+      box.removeEventListener("pointerup", onUp);
+      box.removeEventListener("pointercancel", onUp);
+    };
+  }, [isMobile]);
+  // was: const displayZoom = Math.min(zoom, fitZoom);
+const displayZoom = isMobile ? Math.min(zoom, fitZoom) : zoom;
+const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
+
 
   /* Profile switch */
   useEffect(()=>{
@@ -452,21 +819,18 @@ const setStageEl = el => {               // one place to set both refs
 
   const toggleSelect = (id) => setSelection(s=> s.includes(id) ? s.filter(x=>x!==id) : [...s, id]);
 
-const onPick = (id, e) => {
-  if (e?.button !== 0) return;
-  if (multi || e?.ctrlKey || e?.metaKey) {
-    // Multi mode: toggle selection AND open the editor
-    setShowPopover(true);
-    setMenu(null);
-    toggleSelect(id);
-  } else {
-    // Single select: open as before
-    setSelection([id]);
-    setShowPopover(true);
-    setMenu(null);
-  }
-};
-
+  const onPick = (id, e) => {
+    if (e?.button !== 0 && e?.pointerType !== "touch") return;
+    if (multi || e?.ctrlKey || e?.metaKey) {
+      setShowPopover(true);
+      setMenu(null);
+      toggleSelect(id);
+    } else {
+      setSelection([id]);
+      setShowPopover(true);
+      setMenu(null);
+    }
+  };
 
   const openMenu = (e, id) => {
     e.preventDefault();
@@ -483,14 +847,19 @@ const onPick = (id, e) => {
 
   /* Lasso */
   const lassoStart = useRef(null);
-  const beginLasso = (e)=>{
-    if(!multi) return;
-    if(e.target.id !== "stage-root") return;
-    const rect = stageRef.current.getBoundingClientRect();
+  const beginLasso = (e) => {
+    if (!multi) return;
+    if (e.target.id !== "stage-root") return;
+
+    const el = stageRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
     const sx = (e.clientX - rect.left) / displayZoom;
     const sy = (e.clientY - rect.top) / displayZoom;
     lassoStart.current = { sx, sy };
     setLasso({ x:sx, y:sy, w:0, h:0 });
+
     const move=(ev)=>{
       const cx = (ev.clientX - rect.left) / displayZoom;
       const cy = (ev.clientY - rect.top) / displayZoom;
@@ -501,23 +870,21 @@ const onPick = (id, e) => {
     const up=()=>{
       window.removeEventListener("mousemove",move);
       window.removeEventListener("mouseup",up);
-      const box = { x:lassoStart.current.sx, y:lassoStart.current.sy, w:0, h:0, ...lasso };
+      const box = { x:lassoStart.current.sx, y:lassoStart.current.sy, ...lasso };
       const hits = Object.entries(layout)
         .filter(([_,p])=>!p.blank && !p.analog && !p.split)
         .map(([id,p])=>({ id, rect:{ x:p.x, y:p.y, w:KEY_W, h:KEY_H } }))
         .filter(({rect})=> rect.x < box.x+box.w && rect.x+rect.w > box.x && rect.y < box.y+box.h && rect.y+rect.h > box.y)
         .map(h=>h.id);
       setSelection(prev => {
-  const set = new Set(prev);
-  hits.forEach(id => set.add(id));
-  const arr = [...set];
-  // Show the editor after the lasso so you can bulk edit immediately
-  setShowPopover(true);
-  setMenu(null);
-  return arr;
-});
-setLasso(null);
-
+        const set = new Set(prev);
+        hits.forEach(id => set.add(id));
+        const arr = [...set];
+        setShowPopover(true);
+        setMenu(null);
+        return arr;
+      });
+      setLasso(null);
     };
     window.addEventListener("mousemove",move);
     window.addEventListener("mouseup",up);
@@ -537,7 +904,6 @@ setLasso(null);
       selection.forEach(id=>{
         const base = next[id] || {};
         const apply = { ...base };
-        const changingColor = opts.color && typeof clipboard.color === "string";
         if(opts.label) apply.label = clipboard.label;
         if(opts.sub)   apply.sub   = clipboard.sub;
         if(opts.emoji) apply.emoji = clipboard.emoji;
@@ -576,183 +942,148 @@ setLasso(null);
     });
   };
 
-    /* Export PNG — centered + printer-friendly */
-  
-    // =========================
-// printer-friendly canvas export
-// =========================
-const saveImage = async () => {
-  const c = canvasRef.current;
-  if (!c) return;
+  /* Export PNG — centered + printer-friendly */
+  const saveImage = async () => {
+    const c = canvasRef.current;
+    if (!c) return;
 
-  // Render at device pixel ratio
-  const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-  c.width = CANVAS_W * dpr;
-  c.height = CANVAS_H * dpr;
-  const ctx = c.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    c.width = CANVAS_W * dpr;
+    c.height = CANVAS_H * dpr;
+    const ctx = c.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  // 1) Background
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+    // 1) Background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // 2) Title
-// Title
-const title =
-  gameTitle?.trim() ||
-  (profile[0].toUpperCase() + profile.slice(1)) + " Layout";
-ctx.fillStyle = "#111";
-ctx.font = "800 32px Montserrat, ui-sans-serif";
-const tw = ctx.measureText(title).width;
-ctx.fillText(title, (CANVAS_W - tw) / 2, 48);
+    // 2) Title
+    const title =
+      gameTitle?.trim() ||
+      (profile[0].toUpperCase() + profile.slice(1)) + " Layout";
+    ctx.fillStyle = "#111";
+    ctx.font = "800 32px Montserrat, ui-sans-serif";
+    const tw = ctx.measureText(title).width;
+    ctx.fillText(title, (CANVAS_W - tw) / 2, 48);
 
-// App name
-ctx.font = "600 20px Montserrat, ui-sans-serif";
-const appName = "Azeron Keymap Helper";
-const aw = ctx.measureText(appName).width;
-ctx.fillText(appName, (CANVAS_W - aw) / 2, 80);
+    // App name
+    ctx.font = "600 20px Montserrat, ui-sans-serif";
+    const appName = "Azeron Keymap Helper";
+    const aw = ctx.measureText(appName).width;
+    ctx.fillText(appName, (CANVAS_W - aw) / 2, 80);
 
-// Author + disclaimer
-ctx.font = "italic 14px Montserrat, ui-sans-serif";
-ctx.fillStyle = "#444";
-ctx.fillText("Created by JimmyCPW — not affiliated with Azeron", (CANVAS_W - 420) / 2, CANVAS_H - 40);
+    // Author + disclaimer
+    ctx.font = "italic 14px Montserrat, ui-sans-serif";
+    ctx.fillStyle = "#444";
+    ctx.fillText("Created by JimmyCPW — not affiliated with Azeron", (CANVAS_W - 420) / 2, CANVAS_H - 40);
 
-  // 3) Preload key images
-  const withImages = Object.entries(layout)
-    .filter(([, p]) => !p.analog && !p.split && !p.blank)
-    .map(([id]) => ({ id, data: map[id] }));
-  for (const { data } of withImages) {
-    if (data?.image) {
-      try {
-        data.__img = await loadImage(data.image);
-      } catch {}
+    // 3) Preload key images
+    const withImages = Object.entries(layout)
+      .filter(([, p]) => !p.analog && !p.split && !p.blank)
+      .map(([id]) => ({ id, data: map[id] }));
+    for (const { data } of withImages) {
+      if (data?.image) {
+        try { data.__img = await loadImage(data.image); } catch {}
+      }
     }
-  }
 
-  // 4) Centering offsets
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = 0,
-    maxY = 0;
-  Object.values(layout).forEach((pos) => {
-    const w = pos.analog ? KEY_W * 2 + GAP_X : KEY_W;
-    const h = pos.analog ? KEY_H * 2 + GAP_Y : KEY_H;
-    minX = Math.min(minX, pos.x);
-    minY = Math.min(minY, pos.y);
-    maxX = Math.max(maxX, pos.x + w);
-    maxY = Math.max(maxY, pos.y + h);
-  });
-  const layoutWidth = maxX - minX;
-  const layoutHeight = maxY - minY;
-  const offsetX = (CANVAS_W - layoutWidth) / 2 - minX;
-  const offsetY = (CANVAS_H - layoutHeight) / 2 - minY + 40;
+    // 4) Centering offsets
+    let minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
+    Object.values(layout).forEach((pos) => {
+      const w = pos.analog ? KEY_W * 2 + GAP_X : KEY_W;
+      const h = KEY_H;
+      minX = Math.min(minX, pos.x);
+      minY = Math.min(minY, pos.y);
+      maxX = Math.max(maxX, pos.x + w);
+      maxY = Math.max(maxY, pos.y + h);
+    });
+    const layoutWidth = maxX - minX;
+    const layoutHeight = maxY - minY;
+    const offsetX = (CANVAS_W - layoutWidth) / 2 - minX;
+    const offsetY = (CANVAS_H - layoutHeight) / 2 - minY + 40;
 
-  // 5) Draw keys and split
-  Object.entries(layout).forEach(([id, pos]) => {
-    if (pos.blank) return;
-    if (pos.split) {
-      const up = map["MU"] || { label: "Mouse Up", color: BASE.teal };
-      const down = map["MD"] || { label: "Mouse Down", color: BASE.indigo };
-      drawSplit(
-        ctx,
-        pos.x + offsetX,
-        pos.y + offsetY,
-        KEY_W,
-        KEY_H,
-        up,
-        down
-      );
-      return;
-    }
-    if (pos.analog) return;
-    drawKey(
-      ctx,
-      pos.x + offsetX,
-      pos.y + offsetY,
-      KEY_W,
-      KEY_H,
-      map[id] || {}
-    );
-  });
-
-  // 6) Analog stick
-  const ap = layout["ANALOG"];
-  if (ap) drawAnalogMonoline(ctx, ap.x + offsetX, ap.y + offsetY);
-
-  // 7) Footer
-  const footer =
-    "Generated with Azeron Keymap Helper — not affiliated with Azeron";
-  ctx.fillStyle = "#444";
-  ctx.font = "600 14px Montserrat, ui-sans-serif";
-  const fw = ctx.measureText(footer).width;
-  ctx.fillText(footer, (CANVAS_W - fw) / 2, CANVAS_H - 20);
-
-  // 8) Download
-  const url = c.toDataURL("image/png");
-  const a = document.createElement("a");
-  a.download = `azeron_${profile}_print.png`;
-  a.href = url;
-  a.click();
-};
-
-// =========================
-// glossy UI DOM snapshot
-// =========================
-const exportUI = async () => {
-  const stage = stageDomRef.current;
-  if (!stage) return;
-
-  // Optional: hide grid overlay
-  const panel = stage.closest(".panel");
-  const grid =
-    panel?.querySelector('div[aria-hidden="true"]') || null;
-
-  // Save current styles
-  const prevTransform = stage.style.transform;
-  const prevW = stage.style.width;
-  const prevH = stage.style.height;
-  const prevAttr = stage.getAttribute("data-exporting");
-  const prevGridDisplay = grid ? grid.style.display : null;
-
-  try {
-    // Freeze scaling for capture
-    stage.style.transform = "none";
-    stage.style.width = `${CANVAS_W}px`;
-    stage.style.height = `${CANVAS_H}px`;
-    stage.setAttribute("data-exporting", "1");
-    if (grid) grid.style.display = "none";
-
-    const dataUrl = await htmlToImage.toPng(stage, {
-      canvasWidth: CANVAS_W,
-      canvasHeight: CANVAS_H,
-      backgroundColor: "#0b0f1d",
-      pixelRatio: Math.max(2, Math.floor(window.devicePixelRatio || 1)),
-      style: { transform: "none" }
+    // 5) Draw keys and split
+    Object.entries(layout).forEach(([id, pos]) => {
+      if (pos.blank) return;
+      if (pos.split) {
+        const up = map["MU"] || { label: "Mouse Up", color: BASE.teal };
+        const down = map["MD"] || { label: "Mouse Down", color: BASE.indigo };
+        drawSplit(ctx, pos.x + offsetX, pos.y + offsetY, KEY_W, KEY_H, up, down);
+        return;
+      }
+      if (pos.analog) return;
+      drawKey(ctx, pos.x + offsetX, pos.y + offsetY, KEY_W, KEY_H, map[id] || {});
     });
 
+    // 6) Analog stick
+    const ap = layout["ANALOG"];
+    if (ap) drawAnalogMonoline(ctx, ap.x + offsetX, ap.y + offsetY);
+
+    // 7) Footer
+    const footer = "Generated with Azeron Keymap Helper — not affiliated with Azeron";
+    ctx.fillStyle = "#444";
+    ctx.font = "600 14px Montserrat, ui-sans-serif";
+    const fw = ctx.measureText(footer).width;
+    ctx.fillText(footer, (CANVAS_W - fw) / 2, CANVAS_H - 20);
+
+    // 8) Download
+    const url = c.toDataURL("image/png");
     const a = document.createElement("a");
-    a.download = `azeron_${profile}_ui.png`;
-    a.href = dataUrl;
+    a.download = `azeron_${profile}_print.png`;
+    a.href = url;
     a.click();
-  } catch (err) {
-    console.error(err);
-    alert("UI export failed. Ensure images are same-origin or data URLs.");
-  } finally {
-    // Restore styles
-    stage.style.transform = prevTransform;
-    stage.style.width = prevW;
-    stage.style.height = prevH;
-    if (prevAttr == null) stage.removeAttribute("data-exporting");
-    else stage.setAttribute("data-exporting", prevAttr);
-    if (grid && prevGridDisplay != null) grid.style.display = prevGridDisplay;
-  }
-};
+  };
+
+  // glossy UI DOM snapshot
+  const exportUI = async () => {
+    const stage = stageDomRef.current;
+    if (!stage) return;
+
+    const panel = stage.closest(".panel");
+    const grid = panel?.querySelector('div[aria-hidden="true"]') || null;
+
+    const prevTransform = stage.style.transform;
+    const prevW = stage.style.width;
+    const prevH = stage.style.height;
+    const prevAttr = stage.getAttribute("data-exporting");
+    const prevGridDisplay = grid ? grid.style.display : null;
+
+    try {
+      stage.style.transform = "none";
+      stage.style.width = `${CANVAS_W}px`;
+      stage.style.height = `${CANVAS_H}px`;
+      stage.setAttribute("data-exporting", "1");
+      if (grid) grid.style.display = "none";
+
+      const dataUrl = await htmlToImage.toPng(stage, {
+        canvasWidth: CANVAS_W,
+        canvasHeight: CANVAS_H,
+        backgroundColor: "#0b0f1d",
+        pixelRatio: Math.max(2, Math.floor(window.devicePixelRatio || 1)),
+        style: { transform: "none" }
+      });
+
+      const a = document.createElement("a");
+      a.download = `azeron_${profile}_ui.png`;
+      a.href = dataUrl;
+      a.click();
+    } catch (err) {
+      console.error(err);
+      alert("UI export failed. Ensure images are same-origin or data URLs.");
+    } finally {
+      stage.style.transform = prevTransform;
+      stage.style.width = prevW;
+      stage.style.height = prevH;
+      if (prevAttr == null) stage.removeAttribute("data-exporting");
+      else stage.setAttribute("data-exporting", prevAttr);
+      if (grid && prevGridDisplay != null) grid.style.display = prevGridDisplay;
+    }
+  };
 
   /* Emoji picker portal */
   const [emojiOpen, setEmojiOpen] = useState(false);
   const emojiButtonRef = useRef(null);
   const pickerRef = useRef(null);
-  
   useEffect(() => {
     if (!emojiOpen) return;
     const onDown = (e) => {
@@ -771,16 +1102,41 @@ const exportUI = async () => {
   /* Popover placement */
   function placePopover(){
     if(!lastSelected) return null;
+
     const popW = 380, popH = 480, pad = 12;
-    const p = layout[lastSelected]; if(!p) return null;
-    const blockW = p.analog ? (KEY_W*2+GAP_X) : KEY_W;
-    let x = p.x + blockW + pad;
-    let y = p.y;
-    if (x + popW > CANVAS_W - pad) x = p.x - popW - pad;
-    x = clamp(x, pad, CANVAS_W - popW - pad);
-    y = clamp(y, pad, CANVAS_H - popH - pad);
-    return { x, y, w:popW, h:popH, side: x > p.x ? "right" : "left" };
+
+    // anchor rect
+    let ax = 0, ay = 0, aw = KEY_W, ah = KEY_H;
+    if (lastSelected === "MU" || lastSelected === "MD") {
+      const mw = layout["MW"]; if (!mw) return null;
+      ax = mw.x; ay = mw.y + (lastSelected === "MU" ? 0 : KEY_H/2);
+      aw = KEY_W; ah = KEY_H/2;
+    } else {
+      const p = layout[lastSelected]; if (!p) return null;
+      ax = p.x; ay = p.y;
+      aw = p.analog ? (KEY_W*2+GAP_X) : KEY_W;
+      ah = KEY_H;
+    }
+
+    // right of anchor
+    let side = "right";
+    let x = ax + aw + pad;
+    let y = ay;
+
+    if (x + popW > CANVAS_W - pad) {
+      x = ax - popW - pad;
+      side = "left";
+    }
+    x = clamp(x, pad, Math.max(pad, CANVAS_W - popW - pad));
+
+    if (y + popH > CANVAS_H - pad) {
+      y = ay + ah - popH;
+    }
+    y = clamp(y, pad, Math.max(pad, CANVAS_H - popH - pad));
+
+    return { x, y, w: popW, h: popH, side };
   }
+
   const pop = placePopover();
   const active = lastSelected ? (map[lastSelected]||{}) : {};
 
@@ -796,7 +1152,7 @@ const exportUI = async () => {
 
   return (
     <div className="pageRoot">
-      {/* Header with logo from project root */}
+      {/* Header */}
       <header className="header">
         <img src="/logo.png" alt="Unofficial Azeron Keymap Helper" className="brandLogo" />
       </header>
@@ -816,120 +1172,193 @@ const exportUI = async () => {
             <label className="badge"><input type="checkbox" checked={showNumbers} onChange={e=>setShowNumbers(e.target.checked)} /> #</label>
 
             <button className="btn" onClick={invertLayout}>Invert</button>
-            <button className="btn" title="Randomize colors" onClick={()=>{
-              setMap(prev=>{
-                const next = { ...prev };
-                Object.keys(layout).forEach(id=>{
-                  if(layout[id].blank || layout[id].analog || layout[id].split) return;
-                  next[id] = { ...(next[id]||{}), color: seededRandomColor(id + Date.now()) };
+            <button
+              className="btn"
+              title="Randomize colors"
+              onClick={() => {
+                setMap(prev => {
+                  const next = { ...prev };
+                  Object.keys(layout).forEach(id => {
+                    if (layout[id].blank || layout[id].analog || layout[id].split) return;
+                    next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
+                  });
+                  next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
+                  next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
+                  return next;
                 });
-                return next;
-              });
-            }}>🎲</button>
+              }}
+            >
+              🎲
+            </button>
           </div>
 
           {/* Bar 2 */}
           <div className="rowWrap centerWrap">
             <input
-              className="input titleInput"
+              className="input titleInput titleInputXL"
               placeholder="Title of your game"
               value={gameTitle}
               onChange={e=>setGameTitle(e.target.value)}
-              style={{ maxWidth:520, minWidth:220 }}
+              style={{ maxWidth:620, minWidth:260 }}
             />
 
-            <button
-              className="btn"
-              onClick={()=>{
-                const payload = { version: 14, profile, layout, map, gameTitle, gloss, showNumbers };
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)], { type:"application/json" }));
-                a.download = `azeron_${profile}_theme.json`;
-                a.click(); URL.revokeObjectURL(a.href);
-              }}
-            >
-              Save Theme
-            </button>
+            {/* THEME / SAVE / LOAD */}
+            <div className="compactMenuWrap">
+              <button
+                className="iconToggle"
+                title="Theme & file actions"
+                onClick={(e)=>{
+                  const menu = e.currentTarget.nextSibling;
+                  menu.classList.toggle("open");
+                }}
+              >
+                <ThemeIcon />
+              </button>
+              <div
+                className="compactMenu"
+                onMouseLeave={(e)=>e.currentTarget.classList.remove("open")}
+              >
+                <div className="row">
+                  <select
+                    className="select"
+                    defaultValue="__none__"
+                    aria-label="Apply preset theme"
+                    onChange={e=>{
+                      const id = e.target.value;
+                      if (id === "__none__") return;
+                      setMap(prev => applyTheme(prev, layout, id));
+                    }}
+                  >
+                    <option value="__none__">Apply preset theme…</option>
+                    {(() => {
+                      const byCat = THEMES.reduce((acc, t) => {
+                        const k = t.cat || "Other";
+                        (acc[k] ||= []).push(t);
+                        return acc;
+                      }, {});
+                      Object.values(byCat).forEach(arr =>
+                        arr.sort((a,b) => a.name.localeCompare(b.name))
+                      );
+                      const order = ["Core", "Controllers", "Games", "Color Vision", "Other"];
+                      const orderedCats = [
+                        ...order.filter(k => byCat[k]),
+                        ...Object.keys(byCat).filter(k => !order.includes(k)),
+                      ];
+                      return orderedCats.map(cat => (
+                        <optgroup key={cat} label={cat}>
+                          {byCat[cat].map(t => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </optgroup>
+                      ));
+                    })()}
+                  </select>
+                </div>
+
+                <div className="row">
+                  <button
+                    className="btn"
+                    onClick={()=>{
+                      const payload = { version: 14, profile, layout, map, gameTitle, gloss, showNumbers };
+                      const a = document.createElement("a");
+                      a.href = URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)], { type:"application/json" }));
+                      a.download = `azeron_${profile}_theme.json`;
+                      a.click(); URL.revokeObjectURL(a.href);
+                    }}
+                  >
+                    <SaveIcon />&nbsp; Save Theme JSON
+                  </button>
+                </div>
+
+                <div className="row">
+                  <button
+                    className="btn"
+                    onClick={()=>{
+                      const inp = document.createElement("input");
+                      inp.type="file"; inp.accept="application/json,.json";
+                      inp.onchange = async (e)=>{
+                        const f=e.target.files?.[0]; if(!f) return;
+                        try{
+                          const data = JSON.parse(await f.text());
+                          const next = data.layout ? (data.layout.positions || data.layout) : (LAYOUTS[data.profile||profile] || LAYOUTS[profile]);
+                          if(data.profile) setProfile(data.profile);
+                          if(next) setLayout({ ...next });
+                          if(data.map) setMap(data.map);
+                          if(data.gameTitle!=null) setGameTitle(data.gameTitle);
+                          if(data.gloss!=null) setGloss(!!data.gloss);
+                          if(data.showNumbers!=null) setShowNumbers(!!data.showNumbers);
+                        }catch{ alert("Failed to load theme"); }
+                      };
+                      inp.click();
+                    }}
+                  >
+                    <FolderIcon />&nbsp; Load Theme JSON
+                  </button>
+                </div>
+                <div className="row">
+                  <button className="btn" onClick={(e)=>e.currentTarget.closest(".compactMenu").classList.remove("open")}>
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Save images */}
+            <div style={{ position: "relative" }}>
+              <button
+                className="btn primary"
+                title="Save"
+                onClick={(e) => {
+                  const m = e.currentTarget.nextSibling;
+                  m.style.display = m.style.display === "block" ? "none" : "block";
+                }}
+                style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#0b1f6f", borderColor:"rgba(255,255,255,.14)" }}
+              >
+                Save <span style={{ marginLeft: 8 }}>▾</span>
+              </button>
+              <div
+                style={{
+                  position:"absolute",
+                  top:"calc(100% + 6px)",
+                  right:0,
+                  display:"none",
+                  background:"rgba(18,23,53,0.96)",
+                  border:"1px solid rgba(255,255,255,.10)",
+                  borderRadius:12,
+                  boxShadow:"0 12px 28px rgba(0,0,0,.45)",
+                  padding:8,
+                  zIndex:10,
+                  minWidth:220
+                }}
+                onMouseLeave={(e)=>{ e.currentTarget.style.display="none"; }}
+              >
+                <button className="btn" style={{ width:"100%", marginBottom:6 }} onClick={saveImage}>
+                  Save printer friendly PNG
+                </button>
+                <button className="btn" style={{ width:"100%" }} onClick={exportUI}>
+                  Save colored UI PNG
+                </button>
+              </div>
+            </div>
+
+            {/* Zoom + Reset */}
+            <button className="iconToggle" title="Zoom Out" onClick={()=>setZoom(z=>Math.max(0.4, +(z-0.1).toFixed(2)))}><ZoomOutIcon /></button>
+            <button className="iconToggle" title="Zoom In"  onClick={()=>setZoom(z=>Math.min(2,   +(z+0.1).toFixed(2)))}><ZoomInIcon /></button>
 
             <button
-              className="btn"
-              onClick={()=>{
-                const inp = document.createElement("input");
-                inp.type="file"; inp.accept="application/json,.json";
-                inp.onchange = async (e)=>{
-                  const f=e.target.files?.[0]; if(!f) return;
-                  try{
-                    const data = JSON.parse(await f.text());
-                    const next = data.layout ? (data.layout.positions || data.layout) : (LAYOUTS[data.profile||profile] || LAYOUTS[profile]);
-                    if(data.profile) setProfile(data.profile);
-                    if(next) setLayout({ ...next });
-                    if(data.map) setMap(data.map);
-                    if(data.gameTitle!=null) setGameTitle(data.gameTitle);
-                    if(data.gloss!=null) setGloss(!!data.gloss);
-                    if(data.showNumbers!=null) setShowNumbers(!!data.showNumbers);
-                  }catch{ alert("Failed to load theme"); }
-                };
-                inp.click();
-              }}
-            >
-              Load Theme
-            </button>
-
-            {/* Save dropdown */}
-<div style={{ position: "relative" }}>
-  <button
-    className="btn primary"
-    title="Save"
-    onClick={(e) => {
-      const m = e.currentTarget.nextSibling;
-      m.style.display = m.style.display === "block" ? "none" : "block";
-    }}
-    style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#0b1f6f", borderColor:"rgba(255,255,255,.14)" }}
-  >
-    Save
-    <span style={{ marginLeft: 8 }}>▾</span>
-  </button>
-  <div
-    style={{
-      position:"absolute",
-      top:"calc(100% + 6px)",
-      right:0,
-      display:"none",
-      background:"rgba(18,23,53,0.96)",
-      border:"1px solid rgba(255,255,255,.10)",
-      borderRadius:12,
-      boxShadow:"0 12px 28px rgba(0,0,0,.45)",
-      padding:8,
-      zIndex:10,
-      minWidth:220
-    }}
-    onMouseLeave={(e)=>{ e.currentTarget.style.display="none"; }}
-  >
-    <button className="btn" style={{ width:"100%", marginBottom:6 }} onClick={saveImage}>
-      Save printer friendly PNG
-    </button>
-    <button className="btn" style={{ width:"100%" }} onClick={exportUI}>
-      Save colored UI PNG
-    </button>
-  </div>
-</div>
-
-
-            {/* zoom and reset cluster */}
-            <button className="btn" title="Zoom Out" onClick={()=>setZoom(z=>Math.max(0.4, +(z-0.1).toFixed(2)))}>–</button>
-            <button className="btn" title="Zoom In" onClick={()=>setZoom(z=>Math.min(2, +(z+0.1).toFixed(2)))}>+</button>
-            <button
-              className="btn"
-              title="Reset layout"
+              className="btn iconLabel"
               onClick={()=>{
                 const next = LAYOUTS[profile] || FALLBACK.positions;
                 setLayout({ ...next });
                 setMap(defaultKeymapForLayout(next));
+                setSelection([]); setShowPopover(false); setMenu(null);
               }}
             >
-              Reset Layout
+              <ResetIcon size={16} />
+              <span>Reset Layout</span>
             </button>
           </div>
+
         </div>
       </div>
 
@@ -937,14 +1366,7 @@ const exportUI = async () => {
       <div className="canvasWrap" ref={containerRef}>
         <div
           className="panel"
-          style={{
-            position:"relative",
-            /* Secondary promotional background over gradient under grid and keys.
-               To enable, uncomment and set your image url. */
-            // backgroundImage: `url(/promo.jpg)`,
-            // backgroundSize: "cover",
-            // backgroundPosition: "center",
-          }}
+          style={{ position:"relative" }}
         >
           {/* Grid */}
           {showGrid && (
@@ -962,205 +1384,292 @@ const exportUI = async () => {
             />
           )}
 
-          <div className="stageBox" style={{ width: stageW, height: stageH }}>
-            <div
-  id="stage-root"
-  ref={stageDomRef}
-  className="stage"
+          <div
+  className="stageBox"
+  ref={stageBoxRef}
+  /* Desktop: no scrollbars. Mobile: scroll/pinch container. */
   style={{
-    width: CANVAS_W,
-    height: CANVAS_H,
-    transform: `scale(${displayZoom})`,
-    transformOrigin: "top left",
-    position: "relative"
-  }}
-  onMouseDown={(e)=>{
-    if(e.button!==0) return;
-    if(e.target.id === "stage-root"){
-      if(multi){ beginLasso(e); } else { setSelection([]); setShowPopover(false); setMenu(null); }
-    }
+    width: stageW,
+    height: stageH,
+    overflow: isMobile ? "auto" : "hidden",
+    WebkitOverflowScrolling: isMobile ? "touch" : "auto"
   }}
 >
-              {lasso && (
-                <div style={{
-                  position:"absolute", left:lasso.x, top:lasso.y, width:lasso.w, height:lasso.h,
-                  border:"1px dashed rgba(124,92,255,.9)", background:"rgba(124,92,255,.15)", borderRadius:6, pointerEvents:"none", zIndex:5
-                }}/>
-              )}
+  <div
+    id="stage-root"
+    ref={setStageEl}
+    className="stage"
+    style={{
+      width: CANVAS_W,
+      height: CANVAS_H,
+      transform: `scale(${displayZoom})`,
+      transformOrigin: "top left",
+      position: "relative"
+    }}
+    /* Desktop uses mouse events; mobile uses pointer for pan/pinch */
+    onPointerDown={(e) => {
+      if (e.button !== 0 && e.pointerType !== "touch") return;
+      if (e.target.id === "stage-root") {
+        if (multi) { beginLasso(e); }
+        else { setSelection([]); setShowPopover(false); setMenu(null); }
+      }
+    }}
+  >
+    {lasso && (
+      <div
+        style={{
+          position:"absolute",
+          left: lasso.x, top: lasso.y,
+          width: lasso.w, height: lasso.h,
+          border:"1px dashed rgba(124,92,255,.9)",
+          background:"rgba(124,92,255,.15)",
+          borderRadius:6,
+          pointerEvents:"none",
+          zIndex:5
+        }}
+      />
+    )}
 
-              {/* blanks */}
-              {Object.entries(layout).filter(([_,p])=>p.blank).map(([id,pos])=>(
-                <div key={id} className="blank" style={{ left:pos.x, top:pos.y }} />
-              ))}
+    {/* blanks */}
+    {Object.entries(layout).filter(([_,p])=>p.blank).map(([id,pos])=>(
+      <div key={id} className="blank" style={{ left:pos.x, top:pos.y }} />
+    ))}
 
-              {/* split wheel */}
-              {layout["MW"] && (
-                <SplitWheel x={layout["MW"].x} y={layout["MW"].y} up={map["MU"]} down={map["MD"]} gloss={gloss} onPick={onPick} />
-              )}
+    {/* split wheel */}
+    {layout["MW"] && (
+      <SplitWheel
+        x={layout["MW"].x}
+        y={layout["MW"].y}
+        up={map["MU"]}
+        down={map["MD"]}
+        gloss={gloss}
+        onPick={onPick}
+        showNumbers={showNumbers}
+      />
+    )}
 
-              {/* keys */}
-              {Object.entries(layout).map(([id,pos])=>{
-                if(pos.blank || pos.analog || pos.split) return null;
-                return (
-                  <KeyTile
-                    key={id}
-                    id={id}
-                    data={{ ...map[id], color: colorFor(id) }}
-                    x={pos.x} y={pos.y}
-                    gloss={gloss}
-                    showNumbers={showNumbers}
-                    selected={selection.includes(id)}
-                    selection={selection.length ? selection : [id]}
-                    draggable={!locked}
-                    zoom={displayZoom}
-                    onPick={onPick}
-                    onDrag={(ids,nx,ny)=>dragTo(ids,nx,ny)}
-                    onContext={(e)=>openMenu(e,id)}
-                  />
-                );
-              })}
+    {/* keys */}
+    {Object.entries(layout).map(([id, pos]) => {
+      if (pos.blank || pos.analog || pos.split) return null;
+      return (
+        <KeyTile
+          key={id}
+          id={id}
+          data={{ ...map[id], color: colorFor(id) }}
+          x={pos.x} y={pos.y}
+          gloss={gloss}
+          showNumbers={showNumbers}
+          selected={selection.includes(id)}
+          selection={selection.length ? selection : [id]}
+          draggable={!locked}
+          zoom={displayZoom}
+          onPick={onPick}
+          onDrag={(ids,nx,ny)=>dragTo(ids,nx,ny)}
+          onContext={(e)=>openMenu(e,id)}
+        />
+      );
+    })}
 
-              {/* analog */}
-              {layout["ANALOG"] && <AnalogStick x={layout["ANALOG"].x} y={layout["ANALOG"].y} />}
+    {/* analog */}
+    {layout["ANALOG"] && (
+      <AnalogStick x={layout["ANALOG"].x} y={layout["ANALOG"].y} />
+    )}
 
-              {/* Edit popover */}
-              {lastSelected && showPopover && pop && (
-                <div
-                  className={`popover ${pop.side}`}
-                  style={{
-                    left:pop.x, top:pop.y, width:pop.w, height:pop.h,
-                    position:"absolute", borderRadius:14,
-                    background:"rgba(15,20,42,.90)", backdropFilter:"blur(6px)",
-                    border:"1px solid rgba(255,255,255,.08)", boxShadow:"0 10px 28px rgba(0,0,0,.35)", display:"flex", flexDirection:"column"
+    {/* Edit popover */}
+    {lastSelected && showPopover && pop && (
+      <div
+        className={`popover ${pop.side}`}
+        style={{
+          left:pop.x, top:pop.y, width:pop.w, height:pop.h,
+          position:"absolute", borderRadius:14,
+          background:"rgba(15,20,42,.90)", backdropFilter:"blur(6px)",
+          border:"1px solid rgba(255,255,255,.08)",
+          boxShadow:"0 10px 28px rgba(0,0,0,.35)",
+          display:"flex", flexDirection:"column"
+        }}
+        onMouseDown={(e)=>e.stopPropagation()}
+      >
+        <div className="popHeader" style={{
+          padding:"10px 12px",
+          borderBottom:"1px solid rgba(255,255,255,.06)",
+          display:"flex", justifyContent:"space-between", alignItems:"center"
+        }}>
+          <span>Selected {selection.length>1 ? `${selection.length} keys` : `#${lastSelected}`}</span>
+          <button className="iconBtn" onClick={()=>{ setSelection([]); setShowPopover(false); }} aria-label="Close">✕</button>
+        </div>
+
+        <div style={{ padding:12 }}>
+          <div className="row">
+            <label>Label</label>
+            <input className="input" value={active.label||""} onChange={e=>setField("label", e.target.value)} />
+          </div>
+
+          <div className="row">
+            <label>Sub</label>
+            <input className="input" value={active.sub||""} onChange={e=>setField("sub", e.target.value)} />
+          </div>
+
+          <div className="row">
+            <label>Emoji</label>
+            <button
+              ref={emojiButtonRef}
+              className="btn"
+              style={{ padding:"6px 10px", display:"inline-flex", alignItems:"center", gap:8 }}
+              onClick={()=>setEmojiOpen(v=>!v)}
+            >
+              <SmileIcon />
+              <span>Pick Emoji</span>
+            </button>
+          </div>
+
+          {emojiOpen && createPortal(
+            <>
+              <ScrollbarCSS />
+              <div
+                ref={pickerRef}
+                className="emojiPanel"
+                style={{
+                  position:"fixed", zIndex: 9999,
+                  ...(() => {
+                    const r = emojiButtonRef.current?.getBoundingClientRect();
+                    const panelW = 360, pad = 8;
+                    const top = (r?.bottom ?? 0) + 6;
+                    let left = (r?.left ?? 0);
+                    const vw = window.innerWidth;
+                    if (left + panelW > vw - pad) left = Math.max(pad, vw - panelW - pad);
+                    return { top, left, width:panelW, maxHeight:360 };
+                  })(),
+                  overflowY:"auto", overflowX:"hidden",
+                  boxShadow:"0 12px 28px rgba(0,0,0,.45)",
+                  borderRadius:12,
+                  background:"rgba(18,23,53,0.96)",
+                  border:"1px solid rgba(255,255,255,.10)"
+                }}
+                onMouseDown={(e)=>e.stopPropagation()}
+              >
+                <EmojiPicker
+                  theme="dark"
+                  autoFocusSearch={false}
+                  onEmojiClick={(data)=>{
+                    setField("emoji", data.emoji);
+                    setEmojiOpen(false);
+                    emojiButtonRef.current?.focus();
                   }}
-                  onMouseDown={(e)=>e.stopPropagation()}
-                >
-                  <div className="popHeader" style={{ padding:"10px 12px", borderBottom:"1px solid rgba(255,255,255,.06)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span>Selected {selection.length>1 ? `${selection.length} keys` : `#${lastSelected}`}</span>
-                    <button className="iconBtn" onClick={()=>{ setSelection([]); setShowPopover(false); }} aria-label="Close">✕</button>
-                  </div>
-                  <div style={{ padding:12 }}>
-                    <div className="row"><label>Label</label>
-                      <input className="input" value={active.label||""} onChange={e=>setField("label", e.target.value)} />
-                    </div>
-                    <div className="row"><label>Sub</label>
-                      <input className="input" value={active.sub||""} onChange={e=>setField("sub", e.target.value)} />
-                    </div>
-                    <div className="row"><label>Emoji</label>
-                      <button ref={emojiButtonRef} className="btn" style={{ padding:"6px 10px", display:"inline-flex", alignItems:"center", gap:8 }} onClick={()=>setEmojiOpen(v=>!v)}>
-                        <SmileIcon />
-                        <span>Pick Emoji</span>
-                      </button>
-                    </div>
-                    {emojiOpen && createPortal(
-                      <>
-                        <ScrollbarCSS />
-                        <div
-                          ref={pickerRef}
-                          className="emojiPanel"
-                          style={{
-                            position:"fixed", zIndex: 9999,
-                            ...(() => {
-                              const r = emojiButtonRef.current?.getBoundingClientRect();
-                              const panelW = 360, pad = 8;
-                              const top = (r?.bottom ?? 0) + 6;
-                              let left = (r?.left ?? 0);
-                              const vw = window.innerWidth;
-                              if (left + panelW > vw - pad) left = Math.max(pad, vw - panelW - pad);
-                              return { top, left, width:panelW, maxHeight:360 };
-                            })(),
-                            overflowY:"auto", overflowX:"hidden",
-                            boxShadow:"0 12px 28px rgba(0,0,0,.45)",
-                            borderRadius:12,
-                            background:"rgba(18,23,53,0.96)",
-                            border:"1px solid rgba(255,255,255,.10)"
-                          }}
-                          onMouseDown={(e)=>e.stopPropagation()}
-                        >
-                          <EmojiPicker
-                            theme="dark"
-                            autoFocusSearch={false}
-                            onEmojiClick={(data)=>{
-                              setField("emoji", data.emoji);
-                              setEmojiOpen(false);
-                              emojiButtonRef.current?.focus();
-                            }}
-                          />
-                        </div>
-                      </>,
-                      document.body
-                    )}
-                    <div className="row" style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      <label>Color</label>
-                      <input type="color" className="colorPicker" value={normalizeHex(active.color||BASE.blue)} onChange={e=>setField("color", e.target.value)} />
-                      <label htmlFor="img-upload" className="iconBtn" title="Upload image" style={{ cursor:"pointer", display:"inline-flex", alignItems:"center", gap:6 }}>
-                        <ImageIcon />
-                      </label>
-                      <input id="img-upload" type="file" accept="image/*" style={{ display:"none" }} onChange={async (e)=>{
-                        const f=e.target.files?.[0]; if(!f) return;
-                        const url = await new Promise(r=>{ const rd=new FileReader(); rd.onload=()=>r(rd.result); rd.readAsDataURL(f); });
-                        setField("image", url); e.target.value = "";
-                      }} />
-                    </div>
-                    <div className="row"><label>Image Mode</label>
-                      <div style={{ display:"flex", gap:8 }}>
-                        <button className={`btn ${active.imageMode!=="cover"?"primary":""}`} onClick={()=>setField("imageMode","icon")}>Icon</button>
-                        <button className={`btn ${active.imageMode==="cover"?"primary":""}`} onClick={()=>setField("imageMode","cover")}>Cover</button>
-                      </div>
-                    </div>
-                    <div className="row"><label>Clear Image</label>
-                      <button className="btn" onClick={()=>{ setField("image", null); setField("imageMode","icon"); }}>Remove</button>
-                    </div>
-                  </div>
-                </div>
-              )}
+                />
+              </div>
+            </>,
+            document.body
+          )}
 
-              {/* Right click menu */}
-              {menu && createPortal(
-                <div
-                  className="ctxMenu"
-                  style={{
-                    position:"fixed", left:menu.x, top:menu.y, width:menu.w, height:menu.h,
-                    background:"rgba(18,23,53,0.96)", border:"1px solid rgba(255,255,255,.10)",
-                    borderRadius:12, boxShadow:"0 12px 28px rgba(0,0,0,.45)", padding:10, zIndex:9999,
-                    display:"flex", flexDirection:"column", justifyContent:"space-between"
-                  }}
-                  onContextMenu={(e)=>e.preventDefault()}
-                  onMouseDown={(e)=>e.stopPropagation()}
-                >
-                  <div style={{ fontWeight:700, fontSize:13, marginBottom:6, opacity:.9 }}>Key actions</div>
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:6 }}>
-                    {[
-                      ["Copy",            ()=>doCopy()],
-                      ["Paste Label",     ()=>doPaste({label:true})],
-                      ["Paste Sub",       ()=>doPaste({sub:true})],
-                      ["Paste Emoji",     ()=>doPaste({emoji:true})],
-                      ["Paste Color",     ()=>doPaste({color:true})],
-                      ["Paste Image",     ()=>doPaste({image:true})],
-                    ].map(([label,fn])=>(
-                      <button
-                        key={label}
-                        className="btn"
-                        onClick={fn}
-                        style={{ fontSize:12, padding:"4px 6px", lineHeight:1.1, whiteSpace:"nowrap" }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{ display:"flex", justifyContent:"flex-end", gap:6, marginTop:6 }}>
-                    <button className="btn" onClick={()=>setMenu(null)} style={{ padding:"4px 8px", fontSize:12 }}>Close</button>
-                    <button className="btn" onClick={()=>doPaste({label:true,sub:true,emoji:true,color:true,image:true})} style={{ padding:"4px 8px", fontSize:12 }}>Paste All</button>
-                  </div>
-                </div>,
-                document.body
-              )}
+          <div className="row" style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <label>Color</label>
+            <input
+              type="color"
+              className="colorPicker"
+              value={normalizeHex(active.color||BASE.blue)}
+              onChange={e=>setField("color", e.target.value)}
+            />
+            <label
+              htmlFor="img-upload"
+              className="iconBtn"
+              title="Upload image"
+              style={{ cursor:"pointer", display:"inline-flex", alignItems:"center", gap:6 }}
+            >
+              <ImageIcon />
+            </label>
+            <input
+              id="img-upload"
+              type="file"
+              accept="image/*"
+              style={{ display:"none" }}
+              onChange={async (e)=>{
+                const f=e.target.files?.[0]; if(!f) return;
+                const url = await new Promise(r=>{ const rd=new FileReader(); rd.onload=()=>r(rd.result); rd.readAsDataURL(f); });
+                setField("image", url); e.target.value = "";
+              }}
+            />
+          </div>
 
-              <canvas ref={canvasRef} style={{ display:"none" }} />
+          <div className="row">
+            <label>Image Mode</label>
+            <div style={{ display:"flex", gap:8 }}>
+              <button className={`btn ${active.imageMode!=="cover"?"primary":""}`} onClick={()=>setField("imageMode","icon")}>Icon</button>
+              <button className={`btn ${active.imageMode==="cover"?"primary":""}`} onClick={()=>setField("imageMode","cover")}>Cover</button>
             </div>
+          </div>
+
+          <div className="row">
+            <label>Clear Image</label>
+            <button className="btn" onClick={()=>{ setField("image", null); setField("imageMode","icon"); }}>Remove</button>
           </div>
         </div>
       </div>
+    )}
+
+    {/* Right click menu (desktop) / Bottom sheet (mobile) */}
+{menu && (
+  isMobile ? (
+    <BottomSheet open={!!menu} onClose={() => setMenu(null)}>
+      <div style={{ padding:16, display:"flex", flexDirection:"column", gap:10 }}>
+        <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>Key actions</div>
+        <button className="btn" onClick={() => doCopy()}>Copy</button>
+        <button className="btn" onClick={() => doPaste({label:true})}>Paste Label</button>
+        <button className="btn" onClick={() => doPaste({sub:true})}>Paste Sub</button>
+        <button className="btn" onClick={() => doPaste({emoji:true})}>Paste Emoji</button>
+        <button className="btn" onClick={() => doPaste({color:true})}>Paste Color</button>
+        <button className="btn" onClick={() => doPaste({image:true})}>Paste Image</button>
+        <button className="btn primary" onClick={() => doPaste({label:true,sub:true,emoji:true,color:true,image:true})}>Paste All</button>
+        <button className="btn" onClick={() => setMenu(null)}>Close</button>
+      </div>
+    </BottomSheet>
+  ) : createPortal(
+    <div
+      className="ctxMenu"
+      style={{
+        position:"fixed", left:menu.x, top:menu.y, width:menu.w, height:menu.h,
+        background:"rgba(18,23,53,0.96)", border:"1px solid rgba(255,255,255,.10)",
+        borderRadius:12, boxShadow:"0 12px 28px rgba(0,0,0,.45)", padding:10, zIndex:9999,
+        display:"flex", flexDirection:"column", justifyContent:"space-between"
+      }}
+      onContextMenu={(e)=>e.preventDefault()}
+      onMouseDown={(e)=>e.stopPropagation()}
+    >
+      <div style={{ fontWeight:700, fontSize:13, marginBottom:6, opacity:.9 }}>Key actions</div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:6 }}>
+        {[
+          ["Copy",            ()=>doCopy()],
+          ["Paste Label",     ()=>doPaste({label:true})],
+          ["Paste Sub",       ()=>doPaste({sub:true})],
+          ["Paste Emoji",     ()=>doPaste({emoji:true})],
+          ["Paste Color",     ()=>doPaste({color:true})],
+          ["Paste Image",     ()=>doPaste({image:true})],
+        ].map(([label,fn])=>(
+          <button
+            key={label}
+            className="btn"
+            onClick={fn}
+            style={{ fontSize:12, padding:"4px 6px", lineHeight:1.1, whiteSpace:"nowrap" }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div style={{ display:"flex", justifyContent:"flex-end", gap:6, marginTop:6 }}>
+        <button className="btn" onClick={()=>setMenu(null)} style={{ padding:"4px 8px", fontSize:12 }}>Close</button>
+        <button className="btn" onClick={()=>doPaste({label:true,sub:true,emoji:true,color:true,image:true})} style={{ padding:"4px 8px", fontSize:12 }}>Paste All</button>
+      </div>
+    </div>,
+    document.body
+  )
+)}
+
+
+    <canvas ref={canvasRef} style={{ display:"none" }} />
+  </div>
+</div>
+
+</div> {/* end .panel */}
+</div> {/* end .canvasWrap */}
 
       {/* Footer links and disclaimer */}
       <footer className="footer">
@@ -1206,10 +1715,12 @@ function KeyTile({
     return ()=> el.removeEventListener("mousedown",down);
   },[draggable,x,y,zoom,onPick,onDrag,selection,id]);
 
-  const flatBg = data?.color || BASE.blue;
+  const flatBg = normalizeHex(data?.color || BASE.blue);
+  const pair = textPair(flatBg);
+
   const mergedStyle = gloss
-    ? { left:x, top:y, "--key": data?.color || BASE.blue }
-    : { left:x, top:y, background: normalizeHex(flatBg), boxShadow: "inset 0 0 0 1px rgba(255,255,255,.06), 0 12px 26px rgba(0,0,0,.45)" };
+    ? { left:x, top:y, "--key": flatBg }
+    : { left:x, top:y, background: flatBg, boxShadow: "inset 0 0 0 1px rgba(255,255,255,.06), 0 12px 26px rgba(0,0,0,.45)" };
 
   const labelSize = data?.label ? (data.label.length > 30 ? 14 : data.label.length > 22 ? 16 : 18) : 18;
   const subSize   = data?.sub   ? (data.sub.length   > 28 ? 13 : data.sub.length   > 20 ? 14 : 16) : 16;
@@ -1240,12 +1751,13 @@ function KeyTile({
         <img alt="" src={data.image} style={{ position:"absolute", right:8, top:8, width:26, height:26, borderRadius:6, objectFit:"cover", boxShadow:"0 1px 4px rgba(0,0,0,.5)", zIndex:2 }} />
       )}
 
-      {data?.emoji ? <div className="emoji" style={{ zIndex:2 }}>{data.emoji}</div> : null}
+      {data?.emoji ? <div className="emoji" style={{ zIndex:2, color: pair.label }}>{data.emoji}</div> : null}
 
       <div
         className="label"
         style={{
           zIndex:2,
+          color: pair.label,
           fontSize: labelSize,
           lineHeight: 1.1,
           overflowWrap: "anywhere",
@@ -1260,6 +1772,7 @@ function KeyTile({
         className="sub"
         style={{
           zIndex:2,
+          color: pair.sub,
           fontSize: subSize,
           overflowWrap: "anywhere",
           wordBreak: "break-word",

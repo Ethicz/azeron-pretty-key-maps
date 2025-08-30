@@ -1,16 +1,13 @@
-import React from "react";
+function SplitWheel({ x, y, up, down, gloss, onPick }){
+  const upBg = normalizeHex(up?.color || BASE.teal);
+  const dnBg = normalizeHex(down?.color || BASE.indigo);
+  const upTxt = textPair(upBg).label;
+  const dnTxt = textPair(dnBg).label;
 
-export default function SplitWheel({ x, y, upLabel, downLabel, colorUp, colorDown, gloss, onPick, showNumbers }){
   return (
-    <div className={`splitTile ${gloss ? "gloss" : ""}`} style={{ left:x, top:y }} onMouseDown={onPick} title="Mouse Wheel">
-      <div className="half top" style={{ background: colorUp || "#00897b" }}>
-        {showNumbers ? <span className="numBadge" style={{ marginRight:8 }}>MW↑</span> : null}
-        {upLabel || "Mouse Up"}
-      </div>
-      <div className="half bottom" style={{ background: colorDown || "#283593" }}>
-        {showNumbers ? <span className="numBadge" style={{ marginRight:8 }}>MW↓</span> : null}
-        {downLabel || "Mouse Down"}
-      </div>
+    <div className={`splitTile ${gloss ? "gloss" : ""}`} style={{ left:x, top:y }} onMouseDown={(e)=>onPick("MW", e)}>
+      <div className="half top"    style={{ background: upBg, color: upTxt }}>{up?.label || "Mouse Up"}</div>
+      <div className="half bottom" style={{ background: dnBg, color: dnTxt }}>{down?.label || "Mouse Down"}</div>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export default {
 
     "4": { x: xs[0], y: ys[3] }, "2": { x: xs[1], y: ys[3] }, "6": { x: xs[2], y: ys[3] },
     "10": { x: xs[3], y: ys[3] }, "15": { x: xs[4], y: ys[3] }, "42": { x: xs[5], y: ys[3] },
-    "ANALOG": { x: xs[6], y: ys[3], analog: true }, "20r": { x: xs[8], y: ys[3] },
+    "ANALOG": { x: xs[6], y: ys[3], analog: true }, "20": { x: xs[8], y: ys[3] },
 
     "36": { x: xs[0], y: ys[4] }, "1": { x: xs[1], y: ys[4] }, "5": { x: xs[2], y: ys[4] },
     "9": { x: xs[3], y: ys[4] }, "14": { x: xs[4], y: ys[4] }, "43": { x: xs[5], y: ys[4] }, "41": { x: xs[8], y: ys[4] },
