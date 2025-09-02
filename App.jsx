@@ -1769,186 +1769,186 @@ export default function App(){
             </div>
           </div>
           {/* Editing fields */}
-          <div className="row">
-            <input
-              className="input"
-              placeholder="Label"
-              value={labelInput}
-              onChange={e => setLabelInput(e.target.value)}
-              style={{ width: '100%' }}
-            />
-          </div>
-          <div className="row">
-            <input
-              className="input"
-              placeholder="Sub"
-              value={subInput}
-              onChange={e => setSubInput(e.target.value)}
-              style={{ width: '100%' }}
-            />
-          </div>
-          {/* Group field: allows assigning a group/category to this key */}
-          <div className="row">
-            <input
-              className="input"
-              placeholder="Group"
-              value={groupInput}
-              onChange={e => setGroupInput(e.target.value)}
-              style={{ width: '100%' }}
-            />
-          </div>
-          <div className="row">
-            {/* Use the same custom emoji picker on both desktop and mobile. Clicking toggles the picker. */}
-            <button
-              ref={emojiButtonRef}
-              className="btn"
-              style={{ width: '100%', padding: '6px 10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-              onClick={() => setEmojiOpen(v => !v)}
-            >
-              <SmileIcon />
-              <span>{activeKey.emoji || 'Pick Emoji'}</span>
-            </button>
-          </div>
-          {emojiOpen && createPortal(
-            <>
-              <ScrollbarCSS />
-              <div
-                ref={pickerRef}
-                className="emojiPanel"
-                style={{
-                  position: 'fixed',
-                  zIndex: 9999,
-                  ...(() => {
-                    // Align the emoji panel relative to the button or hidden input.
-                    const r = emojiButtonRef.current?.getBoundingClientRect();
-                    const panelW = 360, pad = 8;
-                    const top = (r?.bottom ?? 0) + 6;
-                    let left = (r?.left ?? 0);
-                    const vw = window.innerWidth;
-                    if (left + panelW > vw - pad) left = Math.max(pad, vw - panelW - pad);
-                    return { top, left, width: panelW, maxHeight: 360 };
-                  })(),
-                  overflowY: 'auto', overflowX: 'hidden',
-                  boxShadow: '0 12px 28px rgba(0,0,0,.45)',
-                  borderRadius: 12,
-                  background: 'rgba(18,23,53,0.96)',
-                  border: '1px solid rgba(255,255,255,.10)',
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                <EmojiPicker
-                  theme="dark"
-                  autoFocusSearch={false}
-                  onEmojiClick={(data) => {
-                    setField('emoji', data.emoji);
-                    setEmojiOpen(false);
-                    emojiButtonRef.current?.focus();
-                  }}
-                />
-              </div>
-            </>,
-            document.body
-          )}
-          {/* Color picker row: color fills full width */}
-          <div style={{ marginTop: 10, width: '100%' }}>
-            <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Color</label>
-            <input
-              type="color"
-              className="colorPicker"
-              value={normalizeHex(activeKey.color || BASE.blue)}
-              onChange={e => setField('color', e.target.value)}
-              style={{ width: '100%', height: 36 }}
-            />
-          </div>
+<div className="row">
+  <input
+    className="input"
+    placeholder="Label"
+    value={labelInput}
+    onChange={e => setLabelInput(e.target.value)}
+    style={{ width: '100%' }}
+  />
+</div>
+<div className="row">
+  <input
+    className="input"
+    placeholder="Sub"
+    value={subInput}
+    onChange={e => setSubInput(e.target.value)}
+    style={{ width: '100%' }}
+  />
+</div>
+{/* Group field: allows assigning a group/category to this key */}
+<div className="row">
+  <input
+    className="input"
+    placeholder="Group"
+    value={groupInput}
+    onChange={e => setGroupInput(e.target.value)}
+    style={{ width: '100%' }}
+  />
+</div>
+<div className="row">
+  {/* Use the same custom emoji picker on both desktop and mobile. Clicking toggles the picker. */}
+  <button
+    ref={emojiButtonRef}
+    className="btn"
+    style={{ width: '100%', padding: '6px 10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+    onClick={() => setEmojiOpen(v => !v)}
+  >
+    <SmileIcon />
+    <span>{activeKey.emoji || 'Pick Emoji'}</span>
+  </button>
+</div>
+{emojiOpen && createPortal(
+  <>
+    <ScrollbarCSS />
+    <div
+      ref={pickerRef}
+      className="emojiPanel"
+      style={{
+        position: 'fixed',
+        zIndex: 9999,
+        ...(() => {
+          // Align the emoji panel relative to the button or hidden input.
+          const r = emojiButtonRef.current?.getBoundingClientRect();
+          const panelW = 360, pad = 8;
+          const top = (r?.bottom ?? 0) + 6;
+          let left = (r?.left ?? 0);
+          const vw = window.innerWidth;
+          if (left + panelW > vw - pad) left = Math.max(pad, vw - panelW - pad);
+          return { top, left, width: panelW, maxHeight: 360 };
+        })(),
+        overflowY: 'auto', overflowX: 'hidden',
+        boxShadow: '0 12px 28px rgba(0,0,0,.45)',
+        borderRadius: 12,
+        background: 'rgba(18,23,53,0.96)',
+        border: '1px solid rgba(255,255,255,.10)',
+      }}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <EmojiPicker
+        theme="dark"
+        autoFocusSearch={false}
+        onEmojiClick={(data) => {
+          setField('emoji', data.emoji);
+          setEmojiOpen(false);
+          emojiButtonRef.current?.focus();
+        }}
+      />
+    </div>
+  </>,
+  document.body
+)}
+{/* Color picker row: color fills full width */}
+<div style={{ marginTop: 10, width: '100%' }}>
+  <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Color</label>
+  <input
+    type="color"
+    className="colorPicker"
+    value={normalizeHex(activeKey.color || BASE.blue)}
+    onChange={e => setField('color', e.target.value)}
+    style={{ width: '100%', height: 36 }}
+  />
+</div>
 
-          {/* Image functions: upload, mode toggle, remove */}
-          <div style={{ fontWeight: 600, fontSize: 14, marginTop: 12 }}>Image</div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', width: '100%' }}>
-            <label
-              htmlFor="img-upload-mobile"
-              className="iconBtn"
-              title="Upload image"
-              style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            >
-              <ImageIcon />
-            </label>
-            <input
-              id="img-upload-mobile"
-              type="file"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={async (e) => {
-                const f = e.target.files?.[0]; if (!f) return;
-                const url = await new Promise(r => {
-                  const rd = new FileReader();
-                  rd.onload = () => r(rd.result);
-                  rd.readAsDataURL(f);
-                });
-                setField('image', url);
-                e.target.value = '';
-              }}
-            />
-            <button
-              className={`btn ${activeKey.imageMode !== 'cover' ? 'primary' : ''}`}
-              onClick={() => setField('imageMode', 'icon')}
-            >
-              Icon
-            </button>
-            <button
-              className={`btn ${activeKey.imageMode === 'cover' ? 'primary' : ''}`}
-              onClick={() => setField('imageMode', 'cover')}
-            >
-              Cover
-            </button>
-            <button
-              className="btn"
-              onClick={() => {
-                setField('image', null);
-                setField('imageMode', 'icon');
-              }}
-            >
-              Remove
-            </button>
-          </div>
-          <div style={{ fontWeight: 700, fontSize: 14 }}>Key actions</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, width: '100%' }}>
-            {keyActions.map(({ label, fn, span }, idx) => (
-              <button
-                key={label}
-                className={`btn ${span ? 'primary' : ''}`}
-                onClick={fn}
-                style={span ? { gridColumn: '1 / -1' } : {}}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <button
-            className="btn"
-            onClick={() => {
-              // Commit local edits to the keymap before closing. Update all selected keys
-              // with the current label, sub, and group values. This avoids re-rendering
-              // the whole app on every keystroke and preserves keyboard focus during editing.
-              setMap(prev => {
-                const next = { ...prev };
-                selection.forEach(id => {
-                  const base = next[id] || {};
-                  next[id] = { ...base, label: labelInput, sub: subInput, group: groupInput };
-                });
-                return next;
-              });
-              setShowMobileEdit(false);
-            }}
-            style={{ marginTop: 8 }}
-          >
-            Continue
-          </button>
-        </div>
-      </div>
-    );
-  };
+{/* Image functions: upload, mode toggle, remove */}
+<div style={{ fontWeight: 600, fontSize: 14, marginTop: 12 }}>Image</div>
+<div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', width: '100%' }}>
+  <label
+    htmlFor="img-upload-mobile"
+    className="iconBtn"
+    title="Upload image"
+    style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+  >
+    <ImageIcon />
+  </label>
+  <input
+    id="img-upload-mobile"
+    type="file"
+    accept="image/*"
+    style={{ display: 'none' }}
+    onChange={async (e) => {
+      const f = e.target.files?.[0]; if (!f) return;
+      const url = await new Promise(r => {
+        const rd = new FileReader();
+        rd.onload = () => r(rd.result);
+        rd.readAsDataURL(f);
+      });
+      setField('image', url);
+      e.target.value = '';
+    }}
+  />
+  <button
+    className={`btn ${activeKey.imageMode !== 'cover' ? 'primary' : ''}`}
+    onClick={() => setField('imageMode', 'icon')}
+  >
+    Icon
+  </button>
+  <button
+    className={`btn ${activeKey.imageMode === 'cover' ? 'primary' : ''}`}
+    onClick={() => setField('imageMode', 'cover')}
+  >
+    Cover
+  </button>
+  <button
+    className="btn"
+    onClick={() => {
+      setField('image', null);
+      setField('imageMode', 'icon');
+    }}
+  >
+    Remove
+  </button>
+</div>
+<div style={{ fontWeight: 700, fontSize: 14 }}>Key actions</div>
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, width: '100%' }}>
+  {keyActions.map(({ label, fn, span }, idx) => (
+    <button
+      key={label}
+      className={`btn ${span ? 'primary' : ''}`}
+      onClick={fn}
+      style={span ? { gridColumn: '1 / -1' } : {}}
+    >
+      {label}
+    </button>
+  ))}
+</div>
+<button
+  className="btn"
+  onClick={() => {
+    // Commit local edits to the keymap before closing. Update all selected keys
+    // with the current label, sub, and group values. This avoids re-rendering
+    // the whole app on every keystroke and preserves keyboard focus during editing.
+    setMap(prev => {
+      const next = { ...prev };
+      selection.forEach(id => {
+        const base = next[id] || {};
+        next[id] = { ...base, label: labelInput, sub: subInput, group: groupInput };
+      });
+      return next;
+    });
+    setShowMobileEdit(false);
+  }}
+  style={{ marginTop: 8 }}
+>
+  Continue
+</button>
+</div>
+</div>
+);
+};
 
-  const saveImage = async () => {
+const saveImage = async () => {
     const c = canvasRef.current;
     if (!c) return;
     try {
@@ -1970,12 +1970,11 @@ export default function App(){
         ctx.fillStyle = grdH;
         ctx.fillRect(0, 0, CANVAS_W, headerH);
 
-        const game = gameTitle?.trim() || '';
-        const deviceName = profile ? (profile[0].toUpperCase() + profile.slice(1)) : '';
+        const game = gameTitle?.trim() || 'Untitled Layout';
+        const deviceName = profile ? (profile.charAt(0).toUpperCase() + profile.slice(1)) : '';
         ctx.fillStyle = '#f2f2f2';
-        ctx.font = '700 30px Montserrat, ui-sans-serif';
-        const gt = game || (deviceName ? `${deviceName} Layout` : '');
-        if (gt) ctx.fillText(gt, 20, 40);
+        ctx.font = '700 24px Montserrat, ui-sans-serif';
+        ctx.fillText(`${game} — Azeron ${deviceName}`, 20, 45);
 
         const grdF = ctx.createLinearGradient(0, CANVAS_H - footerH, 0, CANVAS_H);
         grdF.addColorStop(0, '#0e0e21');
@@ -2079,10 +2078,13 @@ export default function App(){
       }
       
       if (printOptions?.includeTitle) {
-        const printDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        const footerText = `Generated on ${printDate}`;
         ctx.fillStyle = '#f2f2f2';
         ctx.font = '600 14px Montserrat, ui-sans-serif';
+        // Bottom-left credit
+        ctx.fillText("© JimmyCPW", 20, CANVAS_H - 20);
+        // Bottom-right date
+        const printDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const footerText = `Generated on ${printDate}`;
         const fw = ctx.measureText(footerText).width;
         ctx.fillText(footerText, CANVAS_W - fw - 20, CANVAS_H - 20);
       }
@@ -2096,19 +2098,23 @@ export default function App(){
   };
 
   const exportUI = async () => {
-    const targetEl = panelRef.current; // ✅ Change target to the panel
+    const targetEl = panelRef.current;
     if (!targetEl) return;
-
+  
+    targetEl.setAttribute("data-exporting", "1");
+  
     try {
       const dataUrl = await htmlToImage.toPng(targetEl, {
         backgroundColor: "#0b0f1d",
-        pixelRatio: Math.max(2, Math.floor(window.devicePixelRatio || 1)),
+        pixelRatio: Math.max(2, window.devicePixelRatio || 1),
         cacheBust: true,
       });
       setPreviewImageUrl(dataUrl);
     } catch (err) {
       console.error(err);
       alert("UI export failed. Ensure images are same-origin or data URLs.");
+    } finally {
+      targetEl.removeAttribute("data-exporting");
     }
   };
 
@@ -2206,7 +2212,6 @@ export default function App(){
 
   return (
     <div className="pageRoot">
-       {/* ✅ Render the new preview modal */}
       <ImagePreviewModal imageUrl={previewImageUrl} onClose={() => setPreviewImageUrl(null)} />
 
       <header className="header">
@@ -2229,7 +2234,7 @@ export default function App(){
               className={`iconToggle ${multi ? 'on' : ''}`}
               onClick={(e) => { e.stopPropagation(); setMulti((m) => !m); }}
               aria-pressed={multi}
-              title="Toggle multi‑select"
+              title="Toggle multi-select"
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
             >
@@ -2273,65 +2278,42 @@ export default function App(){
         </FullScreenSheet>
       )}
 
-      {/* ✅ Simplified main content structure */}
       <div className="mainContent" ref={containerRef}>
         <div className="stageBox" ref={stageBoxRef}>
             <div
               id="stage-root"
-              ref={setStageEl}
+              ref={stageRef}
               className="stage"
               style={{
                 width: CANVAS_W,
                 height: CANVAS_H,
-                transform: `scale(${displayZoom})`,
-                backgroundImage: showGrid ? `
-                  linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
-                  linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px)
-                ` : 'none',
-                backgroundSize: showGrid ? `${VIS_GRID}px ${VIS_GRID}px` : 'auto',
+                transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
               }}
-              onPointerDown={(e) => {
-                if (e.button !== 0 && e.pointerType !== "touch") return;
-                if (e.target.id === "stage-root") {
-                  if (multi) { beginLasso(e); }
-                  else { setSelection([]); setShowPopover(false); setMenu(null); }
-                }
-              }}
+              onMouseDown={beginLasso}
             >
-              {groupLegend.length > 0 && isMobile && (
-                <div className="legendBar mobile">
-                  {groupLegend.map(([g, cols]) => {
-                    const color = cols.length ? cols[0] : '#888';
-                    return (
-                      <div key={g} className="legendItem">
-                        <div className="legendDot" style={{ background: color }} />
-                        <div className="legendText">{g}</div>
-                      </div>
-                    );
-                  })}
-                </div>
+              {showGrid && (
+                <div
+                  aria-hidden
+                  className="gridFlow"
+                  style={{ '--grid': `${VIS_GRID}px` }}
+                />
               )}
               {lasso && (
                 <div
+                  className="lasso"
                   style={{
-                    position:"absolute",
-                    left: lasso.x, top: lasso.y,
-                    width: lasso.w, height: lasso.h,
-                    border:"1px dashed rgba(124,92,255,.9)",
-                    background:"rgba(124,92,255,.15)",
-                    borderRadius:6,
-                    pointerEvents:"none",
-                    zIndex:5
+                    left: (lasso.x - offset.x) / zoom,
+                    top: (lasso.y - offset.y) / zoom,
+                    width: lasso.w / zoom,
+                    height: lasso.h / zoom
                   }}
                 />
               )}
 
-              {/* blanks */}
-              {Object.entries(layout).filter(([_,p])=>p.blank).map(([id,pos])=>(
+              {Object.entries(layout).filter(([,p])=>p.blank).map(([id,pos])=>(
                 <div key={id} className="blank" style={{ left:pos.x, top:pos.y }} />
               ))}
 
-              {/* split wheel */}
               {layout["MW"] && (
                 <SplitWheel
                   x={layout["MW"].x}
@@ -2344,7 +2326,6 @@ export default function App(){
                 />
               )}
 
-              {/* keys */}
               {Object.entries(layout).map(([id, pos]) => {
                 if (pos.blank || pos.analog || pos.split) return null;
                 return (
@@ -2359,173 +2340,33 @@ export default function App(){
                     selected={selection.includes(id)}
                     selection={selection.length ? selection : [id]}
                     draggable={!locked}
-                    zoom={displayZoom}
+                    zoom={zoom}
                     onPick={onPick}
-                    onDrag={(ids, nx, ny) => dragTo(ids, nx, ny)}
+                    onDrag={(ids, dx, dy) => dragTo(ids, dx, dy)}
                     onContext={(e) => openMenu(e, id)}
                   />
                 );
               })}
 
-              {/* analog */}
               {layout["ANALOG"] && (
                 <AnalogStick x={layout["ANALOG"].x} y={layout["ANALOG"].y} />
               )}
 
-              {/* Edit popover */}
               {lastSelected && showPopover && pop && (
                 <div
                   className={`popover ${pop.side}`}
                   style={{
                     left:pop.x, top:pop.y, width:pop.w, height:pop.h,
-                    position:"absolute", borderRadius:14,
-                    background:"rgba(15,20,42,.90)", backdropFilter:"blur(6px)",
-                    border:"1px solid rgba(255,255,255,.08)",
-                    boxShadow:"0 10px 28px rgba(0,0,0,.35)",
-                    display:"flex", flexDirection:"column"
                   }}
                   onMouseDown={(e)=>e.stopPropagation()}
                 >
-                  <div className="popHeader" style={{
-                    padding:"10px 12px",
-                    borderBottom:"1px solid rgba(255,255,255,.06)",
-                    display:"flex", justifyContent:"space-between", alignItems:"center"
-                  }}>
+                  <div className="popHeader">
                     <span>Selected {selection.length>1 ? `${selection.length} keys` : `#${lastSelected}`}</span>
                     <button className="iconBtn" onClick={()=>{ setSelection([]); setShowPopover(false); }} aria-label="Close">✕</button>
-                  </div>
-
-                  <div style={{ padding:12 }}>
-                    <div className="row">
-                      <label>Label</label>
-                      <input className="input" value={active.label||""} onChange={e=>setField("label", e.target.value)} />
-                    </div>
-
-                    <div className="row">
-                      <label>Sub</label>
-                      <input className="input" value={active.sub||""} onChange={e=>setField("sub", e.target.value)} />
-                    </div>
-
-                    {/* Group field for assigning a zone/group to this key. Only shown on desktop (mobile uses quick group assignment). */}
-                    <div className="row">
-                      <label>Group</label>
-                      <input
-                        className="input"
-                        value={active.group || ''}
-                        onChange={e => setField('group', e.target.value)}
-                      />
-                    </div>
-
-                    <div className="row">
-                      <label>Emoji</label>
-                      <button
-                        ref={emojiButtonRef}
-                        className="btn"
-                        style={{ padding:"6px 10px", display:"inline-flex", alignItems:"center", gap:8 }}
-                        onClick={()=>setEmojiOpen(v=>!v)}
-                      >
-                        <SmileIcon />
-                        <span>Pick Emoji</span>
-                      </button>
-                    </div>
-
-                    {emojiOpen && createPortal(
-                      <>
-                        <ScrollbarCSS />
-                        <div
-                          ref={pickerRef}
-                          className="emojiPanel"
-                          style={{
-                            position:"fixed", zIndex: 9999,
-                            ...(() => {
-                              const r = emojiButtonRef.current?.getBoundingClientRect();
-                              const panelW = 360, pad = 8;
-                              const top = (r?.bottom ?? 0) + 6;
-                              let left = (r?.left ?? 0);
-                              const vw = window.innerWidth;
-                              if (left + panelW > vw - pad) left = Math.max(pad, vw - panelW - pad);
-                              return { top, left, width:panelW, maxHeight:360 };
-                            })(),
-                            overflowY:"auto", overflowX:"hidden",
-                            boxShadow:"0 12px 28px rgba(0,0,0,.45)",
-                            borderRadius:12,
-                            background:"rgba(18,23,53,0.96)",
-                            border:"1px solid rgba(255,255,255,.10)"
-                          }}
-                          onMouseDown={(e)=>e.stopPropagation()}
-                        >
-                          <EmojiPicker
-                            theme="dark"
-                            autoFocusSearch={false}
-                            onEmojiClick={(data)=>{
-                              setField("emoji", data.emoji);
-                              setEmojiOpen(false);
-                              emojiButtonRef.current?.focus();
-                            }}
-                          />
-                        </div>
-                      </>,
-                      document.body
-                    )}
-
-                    <div className="row" style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      <label>Color</label>
-                      <input
-                        type="color"
-                        className="colorPicker"
-                        value={normalizeHex(active.color||BASE.blue)}
-                        onChange={e=>setField("color", e.target.value)}
-                        /* enlarge swatch for better visibility */
-                        style={{ width: 72, height: 42, padding: 2, borderRadius: 8, border: '2px solid #e7e9f6', background: '#fff' }}
-                      />
-                      <label
-                        htmlFor="img-upload"
-                        className="iconBtn"
-                        title="Upload image"
-                        style={{ cursor:"pointer", display:"inline-flex", alignItems:"center", gap:6 }}
-                      >
-                        <ImageIcon />
-                      </label>
-                      <input
-                        id="img-upload"
-                        type="file"
-                        accept="image/*"
-                        style={{ display:"none" }}
-                        onChange={async (e)=>{
-                          const f=e.target.files?.[0]; if(!f) return;
-                          const url = await new Promise(r=>{ const rd=new FileReader(); rd.onload=()=>r(rd.result); rd.readAsDataURL(f); });
-                          setField("image", url); e.target.value = "";
-                        }}
-                      />
-                    </div>
-
-                    <div className="row">
-                      <label>Image Mode</label>
-                      <div style={{ display:"flex", gap:8, width:"100%" }}>
-                        <button
-                          className={`btn ${active.imageMode!=="cover"?"primary":""}`}
-                          onClick={()=>setField("imageMode","icon")}
-                          style={{ flex: 1 }}
-                        >Icon</button>
-                        <button
-                          className={`btn ${active.imageMode==="cover"?"primary":""}`}
-                          onClick={()=>setField("imageMode","cover")}
-                          style={{ flex: 1 }}
-                        >Cover</button>
-                      </div>
-                    </div>
-                    {/* Show clear image only if an image is currently assigned */}
-                    {active?.image && (
-                      <div className="row">
-                        <label>Clear Image</label>
-                        <button className="btn" onClick={()=>{ setField("image", null); setField("imageMode","icon"); }}>Remove</button>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
 
-              {/* Right click menu (desktop) / Bottom sheet (mobile) */}
               {menu && (
                 isMobile ? (
                   <BottomSheet open={!!menu} onClose={() => setMenu(null)}>
@@ -2545,38 +2386,14 @@ export default function App(){
                   <div
                     className="ctxMenu"
                     style={{
-                      position:"fixed", left:menu.x, top:menu.y, width:menu.w, height:menu.h,
-                      background:"rgba(18,23,53,0.96)", border:"1px solid rgba(255,255,255,.10)",
-                      borderRadius:12, boxShadow:"0 12px 28px rgba(0,0,0,.45)", padding:10, zIndex:9999,
-                      display:"flex", flexDirection:"column", justifyContent:"space-between"
+                      position:"fixed", left:menu.x, top:menu.y, width:menu.w
                     }}
                     onContextMenu={(e)=>e.preventDefault()}
                     onMouseDown={(e)=>e.stopPropagation()}
                   >
-                    <div style={{ fontWeight:700, fontSize:13, marginBottom:6, opacity:.9 }}>Key actions</div>
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:6 }}>
-                      {[
-                        ["Copy",            ()=>doCopy()],
-                        ["Paste Label",     ()=>doPaste({label:true})],
-                        ["Paste Sub",       ()=>doPaste({sub:true})],
-                        ["Paste Emoji",     ()=>doPaste({emoji:true})],
-                        ["Paste Color",     ()=>doPaste({color:true})],
-                        ["Paste Image",     ()=>doPaste({image:true})],
-                      ].map(([label,fn])=>(
-                        <button
-                          key={label}
-                          className="btn"
-                          onClick={fn}
-                          style={{ fontSize:12, padding:"4px 6px", lineHeight:1.1, whiteSpace:"nowrap" }}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"flex-end", gap:6, marginTop:6 }}>
-                      <button className="btn" onClick={()=>setMenu(null)} style={{ padding:"4px 8px", fontSize:12 }}>Close</button>
-                      <button className="btn" onClick={()=>doPaste({label:true,sub:true,emoji:true,color:true,image:true,group:true})} style={{ padding:"4px 8px", fontSize:12 }}>Paste All</button>
-                    </div>
+                     <div style={{ fontWeight:700, fontSize:13, padding: "8px 12px", borderBottom: "1px solid var(--edge)" }}>Key actions</div>
+                    <div className="ctxItem" onClick={() => doCopy()}>Copy</div>
+                    <div className="ctxItem" onClick={() => doPaste({label:true, sub:true, emoji:true, color:true, image:true, group:true })}>Paste All</div>
                   </div>,
                   document.body
                 )
@@ -2584,11 +2401,9 @@ export default function App(){
 
               <canvas ref={canvasRef} style={{ display:"none" }} />
             </div>
-          </div>
         </div>
       </div>
 
-      {/* Footer links and disclaimer */}
       <footer className="footer">
         <div className="footerLinks">
           <a className="btn" href="https://discord.gg/9tw9pju" target="_blank" rel="noreferrer">Azeron Discord</a>
@@ -2621,26 +2436,36 @@ function KeyTile({
   onContext,
 }) {
   const ref = useRef(null);
+  const dragStart = useRef(null);
 
   useEffect(()=>{ if(!draggable) return; const el=ref.current; if(!el) return;
-    let sx=0,sy=0,ox=0,oy=0,drag=false;
-    const down=e=>{
+    
+    const onDown=e=>{
       if(e.button!==0) return;
-      drag=true; sx=e.clientX; sy=e.clientY; ox=x; oy=y;
+      dragStart.current = { x: e.clientX, y: e.clientY };
       onPick(id, e);
-      window.addEventListener("mousemove",move); window.addEventListener("mouseup",up);
+      window.addEventListener("pointermove",onMove);
+      window.addEventListener("pointerup",onUp);
       e.preventDefault();
+      e.stopPropagation();
     };
-    const move=e=>{
-      if(!drag) return;
-      const dx=(e.clientX-sx)/zoom, dy=(e.clientY-sy)/zoom;
-      onDrag(selection, Math.round(ox+dx), Math.round(oy+dy));
+    
+    const onMove=e=>{
+      if(!dragStart.current) return;
+      const dx = e.clientX - dragStart.current.x;
+      const dy = e.clientY - dragStart.current.y;
+      onDrag(selection, dx, dy);
+      dragStart.current = { x: e.clientX, y: e.clientY };
     };
-    const up=()=>{ if(!drag) return; drag=false;
-      window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up);
+
+    const onUp=()=>{ 
+      dragStart.current = null;
+      window.removeEventListener("pointermove",onMove);
+      window.removeEventListener("pointerup",onUp);
     };
-    el.addEventListener("mousedown",down);
-    return ()=> el.removeEventListener("mousedown",down);
+
+    el.addEventListener("pointerdown",onDown);
+    return ()=> el.removeEventListener("pointerdown",onDown);
   },[draggable,x,y,zoom,onPick,onDrag,selection,id]);
 
   const flatBg = normalizeHex(data?.color || BASE.blue);
@@ -2658,8 +2483,6 @@ function KeyTile({
       ref={ref}
       className={`key ${gloss ? 'gloss' : ''} ${selected ? 'selected' : ''}`}
       style={mergedStyle}
-      // Use pointer events to select keys on both mobile and desktop. Only respond to
-      // primary pointer (mouse or touch).
       onPointerDown={(e) => {
         if (e.button === 0 || e.pointerType === 'touch') {
           onPick(id, e);
