@@ -64,6 +64,28 @@ body{
   gap: 10px;
 }
 
+.rowWrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.centerWrap { 
+  justify-content: center;
+}
+.printOptionsWrap {
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding-top: 10px;
+  width: 100%;
+  justify-content: center;
+}
+.rowTitle {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--muted);
+  margin-right: 8px;
+}
+
 
 .btn{
   background: linear-gradient(180deg, #1b2446, #121736);
@@ -100,7 +122,15 @@ body{
 }
 .input::placeholder{ color:var(--muted); }
 
-.titleInput{ flex:1; min-width:420px; }
+.titleInput{ 
+  flex-grow: 1;
+  max-width: 620px;
+  min-width: 260px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  padding: 12px 14px;
+}
 
 .colorPicker{
   width:64px; height:38px; padding:2px; border-radius:8px;
@@ -140,7 +170,10 @@ body{
 }
 .panel{
   position:relative;
-  display:flex; align-items:center; justify-content:center;
+  display:flex;
+  flex-direction: column;
+  align-items:center; 
+  justify-content:center;
   min-height: 540px;
 }
 
@@ -192,11 +225,6 @@ body{
   backdrop-filter: blur(4px);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,.3);
-}
-.legendRow{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
 }
 .legendBar .legendItem{
   display: inline-flex;
@@ -301,16 +329,6 @@ body{
   flex-direction: column;
 }
 
-/* Header: center the logo; mobile controls are absolutely positioned */
-/*
- * Header layout
- *
- * We use a flex container so that on mobile the left and right control
- * buttons (settings, multi/edit) sit on either side of the centred logo.
- * The brand wrapper expands to fill available space, keeping the logo
- * centred regardless of the width of the side controls. On desktop the
- * side controls are not rendered, so the logo remains centred by default.
- */
 .header {
   display: flex;
   align-items: center;
@@ -319,8 +337,6 @@ body{
   padding-top: 10px;
 }
 
-/* Brand wrapper: flex‑grow so it consumes remaining space and centres
-   the logo horizontally. */
 .brandWrap {
   flex: 1;
   display: flex;
@@ -332,9 +348,6 @@ body{
   opacity: .95;
 }
 
-/* Controls container for mobile multi‑select and edit buttons
-   On mobile we position these inside the header using flex rather
-   than absolute positioning so they sit neatly to the right of the logo. */
 .mobileMultiControls {
   position: absolute;
   top: 20px;
@@ -344,29 +357,6 @@ body{
   align-items: center;
   z-index: 10;
 }
-
-.topbar {
-  position: relative;
-  top: 0;
-  z-index: 20;
-  backdrop-filter: blur(6px);
-}
-
-.toolbarWrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 6px 8px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.rowWrap {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-.centerWrap { justify-content: center; }
 
 .btn.glossy.deviceBtn {
   background: linear-gradient(180deg, rgba(30,36,74,.95), rgba(17,22,44,.95));
@@ -397,6 +387,10 @@ body{
   text-align: left;
   padding: 8px 10px;
   border-radius: 8px;
+  background-color: transparent;
+  border: none;
+  color: var(--fg);
+  cursor: pointer;
 }
 .deviceItem:hover { background: rgba(255,255,255,.08); }
 .deviceItem.active { background: rgba(124,92,255,.25); }
@@ -506,20 +500,6 @@ body{
 /* Compact row spacing for icon bar */
 .iconRow{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 
-/* Bigger title input */
-.titleInputXL{
-  font-size:20px; font-weight:800; letter-spacing:.2px;
-  padding:12px 14px;
-}
-
-/* Tiny label chip to sit next to icon toggles (for Gloss only) */
-.badgeChip{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:8px 10px; border-radius:12px;
-  background:rgba(255,255,255,.05);
-  border:1px solid var(--edge); color:var(--fg); font-weight:600;
-}
-
 /* Theme compact menu */
 .compactMenuWrap{ position:relative; }
 .compactMenu{
@@ -542,12 +522,30 @@ body{
   font-size: 14px;   /* slightly smaller if needed */
 }
 
-/* Hide the desktop top bar on small screens */
+/* Save Menu */
+.saveMenuWrap { position: relative; }
+.saveMenu {
+  position:absolute;
+  top:calc(100% + 6px);
+  right:0;
+  display:none;
+  background:rgba(18,23,53,0.96);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  box-shadow:0 12px 28px rgba(0,0,0,.45);
+  padding:8px;
+  z-index:50;
+  min-width:220px;
+}
+.saveMenu.open { display: block; }
+.saveMenu .btn { width: 100%; }
+.saveMenu .btn:not(:last-child) { margin-bottom: 6px; }
+
+/* Responsive Overrides */
 @media (max-width: 768px) {
   .topbar {
     display: none;
   }
-  /* Make the canvas fill the viewport minus the header */
   .canvasWrap {
     width: 100vw;
     height: calc(100vh - 120px);
@@ -557,12 +555,11 @@ body{
   .header {
     position: relative;
   }
-  /* Settings button: remove absolute positioning on mobile. It sits on the
-     left side of the header and pushes the brand into the centre. */
   .settingsButton {
     position: absolute;
     left: 16px;
-    top: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     background: transparent;
     border: none;
     padding: 4px;
@@ -572,13 +569,31 @@ body{
   .settingsButton:hover {
     opacity: 0.8;
   }
-
-  /* Hide scrollbars for the stage container on mobile */
   .stageBox::-webkit-scrollbar {
     display: none;
   }
   .stageBox {
     scrollbar-width: none;
+  }
+
+  /* Adjust toolbar for mobile settings sheet */
+  .fullSheetBody .toolbarWrap {
+    padding: 16px;
+  }
+  .fullSheetBody .rowWrap {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .fullSheetBody .rowWrap > * {
+    width: 100%;
+  }
+  .fullSheetBody .titleInput {
+    min-width: 0;
+  }
+  .fullSheetBody .centerWrap,
+  .fullSheetBody .printOptionsWrap {
+    align-items: center;
   }
 }
 
