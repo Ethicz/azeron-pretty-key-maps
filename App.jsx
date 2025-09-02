@@ -709,7 +709,7 @@ function TopBarControls({
   resetLayout,
   printOptions,
   setPrintOptions,
-  onClose, // ✅ New prop for closing the mobile panel
+  onClose,
 }) {
   return (
     <div className="toolbarWrap">
@@ -1190,7 +1190,7 @@ export default function App(){
     };
   }, [showMobileSettings, showMobileEdit]);
 
-  // Fit zoom (responsive)
+  // ✅ Fit zoom and set initial mobile zoom
   useEffect(() => {
     const ro = new ResizeObserver(() => {
       const el = containerRef.current;
@@ -1202,19 +1202,24 @@ export default function App(){
       const zH = CANVAS_H > 0 ? availH / CANVAS_H : 1;
       const z = Math.max(0.35, Math.min(1, Math.min(zW, zH)));
       setFitZoom(z);
-      // ✅ Set the initial zoom level to the fitZoom value on mobile
       if (isMobile) {
         setZoom(z);
       }
     });
     if (containerRef.current) ro.observe(containerRef.current);
     return () => ro.disconnect();
-  }, [CANVAS_W, CANVAS_H, isMobile]); // ✅ Add isMobile dependency
+  }, [CANVAS_W, CANVAS_H, isMobile]);
 
-  // Mobile pan (1-finger) + pinch (2-finger)
+  // ✅ Mobile pan, pinch, and initial centering
   useEffect(() => {
     const box = stageBoxRef.current;
     if (!box) return;
+
+    // Center the content on load or when zoom/size changes
+    const contentWidth = CANVAS_W * zoom;
+    const contentHeight = CANVAS_H * zoom;
+    box.scrollLeft = (contentWidth - box.clientWidth) / 2;
+    box.scrollTop = (contentHeight - box.clientHeight) / 2;
 
     if (!isMobile) {
       box.style.touchAction = "auto";
@@ -1258,9 +1263,9 @@ export default function App(){
         box.scrollTop  = panStart.sy + dy;
       } else if (pointers.size >= 2) {
         const d = dist();
-        if (lastDist > 0) { // check lastDist is not 0
+        if (lastDist > 0) {
           const factor = d / lastDist;
-          setZoom(z => clamp(+((z * factor)).toFixed(3), 0.35, 2));
+          setZoom(z => clamp(+((z * factor)).toFixed(3), 0.2, 2));
         }
         lastDist = d;
       }
@@ -1284,13 +1289,11 @@ export default function App(){
       box.removeEventListener("pointerup", onUp);
       box.removeEventListener("pointercancel", onUp);
     };
-  }, [isMobile]);
+  }, [isMobile, zoom, CANVAS_W, CANVAS_H]);
   
   // ✅ Corrected zoom calculation to allow pinch-to-zoom on mobile
   const displayZoom = zoom;
-  const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
-
-
+  
   /* Profile switch */
   useEffect(()=>{
     const next = LAYOUTS[profile] || FALLBACK.positions;
@@ -2279,349 +2282,277 @@ export default function App(){
           )}
 
           {/* Grid */}
-          {showGrid && (
+          {showGrid && !isMobile && ( // Hide grid on mobile stageBox
             <div
               aria-hidden
+              className="gridFlow"
               style={{
-                position:"absolute", inset:0, pointerEvents:"none",
-                backgroundImage: `
-                  linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
-                  linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px)
-                `,
-                backgroundSize: `${VIS_GRID*displayZoom}px ${VIS_GRID*displayZoom}px, ${VIS_GRID*displayZoom}px ${VIS_GRID*displayZoom}px`,
-                zIndex:0
+                '--grid': `${VIS_GRID * displayZoom}px`,
               }}
             />
           )}
 
           <div
-  className="stageBox"
-  ref={stageBoxRef}
-  /* Desktop: no scrollbars. Mobile: scroll/pinch container. */
-  style={{
-    width: stageW,
-    height: stageH,
-    overflow: isMobile ? "auto" : "hidden",
-    WebkitOverflowScrolling: isMobile ? "touch" : "auto"
-  }}
->
-  <div
-    id="stage-root"
-    ref={setStageEl}
-    className="stage"
-    style={{
-      width: CANVAS_W,
-      height: CANVAS_H,
-      transform: `scale(${displayZoom})`,
-      transformOrigin: "top left",
-      position: "relative"
-    }}
-    /* Desktop uses mouse events; mobile uses pointer for pan/pinch */
-    onPointerDown={(e) => {
-      if (e.button !== 0 && e.pointerType !== "touch") return;
-      if (e.target.id === "stage-root") {
-        if (multi) { beginLasso(e); }
-        else { setSelection([]); setShowPopover(false); setMenu(null); }
-      }
-    }}
-  >
-    {lasso && (
-      <div
-        style={{
-          position:"absolute",
-          left: lasso.x, top: lasso.y,
-          width: lasso.w, height: lasso.h,
-          border:"1px dashed rgba(124,92,255,.9)",
-          background:"rgba(124,92,255,.15)",
-          borderRadius:6,
-          pointerEvents:"none",
-          zIndex:5
-        }}
-      />
-    )}
-
-    {/* blanks */}
-    {Object.entries(layout).filter(([_,p])=>p.blank).map(([id,pos])=>(
-      <div key={id} className="blank" style={{ left:pos.x, top:pos.y }} />
-    ))}
-
-    {/* split wheel */}
-    {layout["MW"] && (
-      <SplitWheel
-        x={layout["MW"].x}
-        y={layout["MW"].y}
-        up={map["MU"]}
-        down={map["MD"]}
-        gloss={gloss}
-        onPick={onPick}
-        showNumbers={showNumbers}
-      />
-    )}
-
-    {/* keys */}
-    {Object.entries(layout).map(([id, pos]) => {
-      if (pos.blank || pos.analog || pos.split) return null;
-      return (
-        <KeyTile
-          key={id}
-          id={id}
-          data={{ ...map[id], color: colorFor(id) }}
-          x={pos.x}
-          y={pos.y}
-          gloss={gloss}
-          showNumbers={showNumbers}
-          selected={selection.includes(id)}
-          selection={selection.length ? selection : [id]}
-          draggable={!locked}
-          zoom={displayZoom}
-          onPick={onPick}
-          onDrag={(ids, nx, ny) => dragTo(ids, nx, ny)}
-          onContext={(e) => openMenu(e, id)}
-        />
-      );
-    })}
-
-    {/* analog */}
-    {layout["ANALOG"] && (
-      <AnalogStick x={layout["ANALOG"].x} y={layout["ANALOG"].y} />
-    )}
-
-    {/* Edit popover */}
-    {lastSelected && showPopover && pop && (
-      <div
-        className={`popover ${pop.side}`}
-        style={{
-          left:pop.x, top:pop.y, width:pop.w, height:pop.h,
-          position:"absolute", borderRadius:14,
-          background:"rgba(15,20,42,.90)", backdropFilter:"blur(6px)",
-          border:"1px solid rgba(255,255,255,.08)",
-          boxShadow:"0 10px 28px rgba(0,0,0,.35)",
-          display:"flex", flexDirection:"column"
-        }}
-        onMouseDown={(e)=>e.stopPropagation()}
-      >
-        <div className="popHeader" style={{
-          padding:"10px 12px",
-          borderBottom:"1px solid rgba(255,255,255,.06)",
-          display:"flex", justifyContent:"space-between", alignItems:"center"
-        }}>
-          <span>Selected {selection.length>1 ? `${selection.length} keys` : `#${lastSelected}`}</span>
-          <button className="iconBtn" onClick={()=>{ setSelection([]); setShowPopover(false); }} aria-label="Close">✕</button>
-        </div>
-
-        <div style={{ padding:12 }}>
-          <div className="row">
-            <label>Label</label>
-            <input className="input" value={active.label||""} onChange={e=>setField("label", e.target.value)} />
-          </div>
-
-          <div className="row">
-            <label>Sub</label>
-            <input className="input" value={active.sub||""} onChange={e=>setField("sub", e.target.value)} />
-          </div>
-
-          {/* Group field for assigning a zone/group to this key. Only shown on desktop (mobile uses quick group assignment). */}
-          <div className="row">
-            <label>Group</label>
-            <input
-              className="input"
-              value={active.group || ''}
-              onChange={e => setField('group', e.target.value)}
-            />
-          </div>
-
-          <div className="row">
-            <label>Emoji</label>
-            <button
-              ref={emojiButtonRef}
-              className="btn"
-              style={{ padding:"6px 10px", display:"inline-flex", alignItems:"center", gap:8 }}
-              onClick={()=>setEmojiOpen(v=>!v)}
+            className="stageBox"
+            ref={stageBoxRef}
+          >
+            <div
+              id="stage-root"
+              ref={setStageEl}
+              className="stage"
+              style={{
+                width: CANVAS_W,
+                height: CANVAS_H,
+                transform: `scale(${displayZoom})`,
+              }}
+              onPointerDown={(e) => {
+                if (e.button !== 0 && e.pointerType !== "touch") return;
+                if (e.target.id === "stage-root") {
+                  if (multi) { beginLasso(e); }
+                  else { setSelection([]); setShowPopover(false); setMenu(null); }
+                }
+              }}
             >
-              <SmileIcon />
-              <span>Pick Emoji</span>
-            </button>
-          </div>
-
-          {emojiOpen && createPortal(
-            <>
-              <ScrollbarCSS />
-              <div
-                ref={pickerRef}
-                className="emojiPanel"
-                style={{
-                  position:"fixed", zIndex: 9999,
-                  ...(() => {
-                    const r = emojiButtonRef.current?.getBoundingClientRect();
-                    const panelW = 360, pad = 8;
-                    const top = (r?.bottom ?? 0) + 6;
-                    let left = (r?.left ?? 0);
-                    const vw = window.innerWidth;
-                    if (left + panelW > vw - pad) left = Math.max(pad, vw - panelW - pad);
-                    return { top, left, width:panelW, maxHeight:360 };
-                  })(),
-                  overflowY:"auto", overflowX:"hidden",
-                  boxShadow:"0 12px 28px rgba(0,0,0,.45)",
-                  borderRadius:12,
-                  background:"rgba(18,23,53,0.96)",
-                  border:"1px solid rgba(255,255,255,.10)"
-                }}
-                onMouseDown={(e)=>e.stopPropagation()}
-              >
-                <EmojiPicker
-                  theme="dark"
-                  autoFocusSearch={false}
-                  onEmojiClick={(data)=>{
-                    setField("emoji", data.emoji);
-                    setEmojiOpen(false);
-                    emojiButtonRef.current?.focus();
+              {showGrid && isMobile && ( // Show grid inside the stage on mobile
+                <div
+                  aria-hidden
+                  className="gridFlow"
+                  style={{
+                    '--grid': `${VIS_GRID}px`, // Use unscaled grid size
                   }}
                 />
-              </div>
-            </>,
-            document.body
-          )}
+              )}
+              {lasso && (
+                <div
+                  className="lasso"
+                  style={{
+                    position:"absolute",
+                    left: lasso.x, top: lasso.y,
+                    width: lasso.w, height: lasso.h,
+                  }}
+                />
+              )}
 
-          <div className="row" style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <label>Color</label>
-            <input
-              type="color"
-              className="colorPicker"
-              value={normalizeHex(active.color||BASE.blue)}
-              onChange={e=>setField("color", e.target.value)}
-              /* enlarge swatch for better visibility */
-              style={{ width: 72, height: 42, padding: 2, borderRadius: 8, border: '2px solid #e7e9f6', background: '#fff' }}
-            />
-            <label
-              htmlFor="img-upload"
-              className="iconBtn"
-              title="Upload image"
-              style={{ cursor:"pointer", display:"inline-flex", alignItems:"center", gap:6 }}
-            >
-              <ImageIcon />
-            </label>
-            <input
-              id="img-upload"
-              type="file"
-              accept="image/*"
-              style={{ display:"none" }}
-              onChange={async (e)=>{
-                const f=e.target.files?.[0]; if(!f) return;
-                const url = await new Promise(r=>{ const rd=new FileReader(); rd.onload=()=>r(rd.result); rd.readAsDataURL(f); });
-                setField("image", url); e.target.value = "";
-              }}
-            />
-          </div>
+              {/* blanks */}
+              {Object.entries(layout).filter(([_,p])=>p.blank).map(([id,pos])=>(
+                <div key={id} className="blank" style={{ left:pos.x, top:pos.y }} />
+              ))}
 
-          <div className="row">
-            <label>Image Mode</label>
-            <div style={{ display:"flex", gap:8, width:"100%" }}>
-              <button
-                className={`btn ${active.imageMode!=="cover"?"primary":""}`}
-                onClick={()=>setField("imageMode","icon")}
-                style={{ flex: 1 }}
-              >Icon</button>
-              <button
-                className={`btn ${active.imageMode==="cover"?"primary":""}`}
-                onClick={()=>setField("imageMode","cover")}
-                style={{ flex: 1 }}
-              >Cover</button>
+              {/* split wheel */}
+              {layout["MW"] && (
+                <SplitWheel
+                  x={layout["MW"].x}
+                  y={layout["MW"].y}
+                  up={map["MU"]}
+                  down={map["MD"]}
+                  gloss={gloss}
+                  onPick={onPick}
+                  showNumbers={showNumbers}
+                />
+              )}
+
+              {/* keys */}
+              {Object.entries(layout).map(([id, pos]) => {
+                if (pos.blank || pos.analog || pos.split) return null;
+                return (
+                  <KeyTile
+                    key={id}
+                    id={id}
+                    data={{ ...map[id], color: colorFor(id) }}
+                    x={pos.x}
+                    y={pos.y}
+                    gloss={gloss}
+                    showNumbers={showNumbers}
+                    selected={selection.includes(id)}
+                    selection={selection.length ? selection : [id]}
+                    draggable={!locked}
+                    zoom={displayZoom}
+                    onPick={onPick}
+                    onDrag={(ids, nx, ny) => dragTo(ids, nx, ny)}
+                    onContext={(e) => openMenu(e, id)}
+                  />
+                );
+              })}
+
+              {/* analog */}
+              {layout["ANALOG"] && (
+                <AnalogStick x={layout["ANALOG"].x} y={layout["ANALOG"].y} />
+              )}
+
+              {/* Edit popover */}
+              {lastSelected && showPopover && pop && (
+                <div
+                  className={`popover ${pop.side}`}
+                  style={{
+                    left:pop.x, top:pop.y, width:pop.w, height:pop.h,
+                  }}
+                  onMouseDown={(e)=>e.stopPropagation()}
+                >
+                  <div className="popHeader">
+                    <span>Selected {selection.length>1 ? `${selection.length} keys` : `#${lastSelected}`}</span>
+                    <button className="iconBtn" onClick={()=>{ setSelection([]); setShowPopover(false); }} aria-label="Close">✕</button>
+                  </div>
+
+                  <div style={{ padding:12 }}>
+                    <div className="row">
+                      <label>Label</label>
+                      <input className="input" value={active.label||""} onChange={e=>setField("label", e.target.value)} />
+                    </div>
+
+                    <div className="row">
+                      <label>Sub</label>
+                      <input className="input" value={active.sub||""} onChange={e=>setField("sub", e.target.value)} />
+                    </div>
+
+                    <div className="row">
+                      <label>Group</label>
+                      <input
+                        className="input"
+                        value={active.group || ''}
+                        onChange={e => setField('group', e.target.value)}
+                      />
+                    </div>
+
+                    <div className="row">
+                      <label>Emoji</label>
+                      <button
+                        ref={emojiButtonRef}
+                        className="btn"
+                        style={{ padding:"6px 10px", display:"inline-flex", alignItems:"center", gap:8 }}
+                        onClick={()=>setEmojiOpen(v=>!v)}
+                      >
+                        <SmileIcon />
+                        <span>Pick Emoji</span>
+                      </button>
+                    </div>
+
+                    {emojiOpen && createPortal(
+                      <>
+                        <ScrollbarCSS />
+                        <div
+                          ref={pickerRef}
+                          className="emojiPanel"
+                          style={{
+                            position:"fixed", zIndex: 9999,
+                            ...(() => {
+                              const r = emojiButtonRef.current?.getBoundingClientRect();
+                              const panelW = 360, pad = 8;
+                              const top = (r?.bottom ?? 0) + 6;
+                              let left = (r?.left ?? 0);
+                              const vw = window.innerWidth;
+                              if (left + panelW > vw - pad) left = Math.max(pad, vw - panelW - pad);
+                              return { top, left, width:panelW, maxHeight:360 };
+                            })(),
+                          }}
+                          onMouseDown={(e)=>e.stopPropagation()}
+                        >
+                          <EmojiPicker
+                            theme="dark"
+                            autoFocusSearch={false}
+                            onEmojiClick={(data)=>{
+                              setField("emoji", data.emoji);
+                              setEmojiOpen(false);
+                              emojiButtonRef.current?.focus();
+                            }}
+                          />
+                        </div>
+                      </>,
+                      document.body
+                    )}
+
+                    <div className="row" style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <label>Color</label>
+                      <input
+                        type="color"
+                        className="colorPicker"
+                        value={normalizeHex(active.color||BASE.blue)}
+                        onChange={e=>setField("color", e.target.value)}
+                        style={{ width: 72, height: 42, padding: 2, borderRadius: 8, border: '2px solid #e7e9f6', background: '#fff' }}
+                      />
+                      <label
+                        htmlFor="img-upload"
+                        className="iconBtn"
+                        title="Upload image"
+                        style={{ cursor:"pointer", display:"inline-flex", alignItems:"center", gap:6 }}
+                      >
+                        <ImageIcon />
+                      </label>
+                      <input
+                        id="img-upload"
+                        type="file"
+                        accept="image/*"
+                        style={{ display:"none" }}
+                        onChange={async (e)=>{
+                          const f=e.target.files?.[0]; if(!f) return;
+                          const url = await new Promise(r=>{ const rd=new FileReader(); rd.onload=()=>r(rd.result); rd.readAsDataURL(f); });
+                          setField("image", url); e.target.value = "";
+                        }}
+                      />
+                    </div>
+
+                    <div className="row">
+                      <label>Image Mode</label>
+                      <div style={{ display:"flex", gap:8, width:"100%" }}>
+                        <button
+                          className={`btn ${active.imageMode!=="cover"?"primary":""}`}
+                          onClick={()=>setField("imageMode","icon")}
+                          style={{ flex: 1 }}
+                        >Icon</button>
+                        <button
+                          className={`btn ${active.imageMode==="cover"?"primary":""}`}
+                          onClick={()=>setField("imageMode","cover")}
+                          style={{ flex: 1 }}
+                        >Cover</button>
+                      </div>
+                    </div>
+                    {active?.image && (
+                      <div className="row">
+                        <label>Clear Image</label>
+                        <button className="btn" onClick={()=>{ setField("image", null); setField("imageMode","icon"); }}>Remove</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Right click menu (desktop) / Bottom sheet (mobile) */}
+              {menu && (
+                isMobile ? (
+                  <BottomSheet open={!!menu} onClose={() => setMenu(null)}>
+                    <div style={{ padding:16, display:"flex", flexDirection:"column", gap:10 }}>
+                      <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>Key actions</div>
+                      <button className="btn" onClick={() => doCopy()}>Copy</button>
+                      <button className="btn" onClick={() => doPaste({label:true})}>Paste Label</button>
+                      <button className="btn" onClick={() => doPaste({sub:true})}>Paste Sub</button>
+                      <button className="btn" onClick={() => doPaste({emoji:true})}>Paste Emoji</button>
+                      <button className="btn" onClick={() => doPaste({color:true})}>Paste Color</button>
+                      <button className="btn" onClick={() => doPaste({image:true})}>Paste Image</button>
+                      <button className="btn primary" onClick={() => doPaste({label:true,sub:true,emoji:true,color:true,image:true,group:true})}>Paste All</button>
+                      <button className="btn" onClick={() => setMenu(null)}>Close</button>
+                    </div>
+                  </BottomSheet>
+                ) : createPortal(
+                  <div
+                    className="ctxMenu"
+                    style={{
+                      position:"fixed", left:menu.x, top:menu.y, width:menu.w,
+                    }}
+                    onContextMenu={(e)=>e.preventDefault()}
+                    onMouseDown={(e)=>e.stopPropagation()}
+                  >
+                    <div style={{ fontWeight:700, fontSize:13, padding: "8px 12px", borderBottom: "1px solid var(--edge)" }}>Key actions</div>
+                    <div className="ctxItem" onClick={() => doCopy()}>Copy</div>
+                    <div className="ctxItem" onClick={() => doPaste({label:true, sub:true, emoji:true, color:true, image:true, group:true })}>Paste All</div>
+                  </div>,
+                  document.body
+                )
+              )}
+
+              <canvas ref={canvasRef} style={{ display:"none" }} />
             </div>
           </div>
-          {/* Show clear image only if an image is currently assigned */}
-          {active?.image && (
-            <div className="row">
-              <label>Clear Image</label>
-              <button className="btn" onClick={()=>{ setField("image", null); setField("imageMode","icon"); }}>Remove</button>
-            </div>
-          )}
         </div>
       </div>
-    )}
-
-    {/* Right click menu (desktop) / Bottom sheet (mobile) */}
-{menu && (
-  isMobile ? (
-    <BottomSheet open={!!menu} onClose={() => setMenu(null)}>
-      <div style={{ padding:16, display:"flex", flexDirection:"column", gap:10 }}>
-        <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>Key actions</div>
-        <button className="btn" onClick={() => doCopy()}>Copy</button>
-        <button className="btn" onClick={() => doPaste({label:true})}>Paste Label</button>
-        <button className="btn" onClick={() => doPaste({sub:true})}>Paste Sub</button>
-        <button className="btn" onClick={() => doPaste({emoji:true})}>Paste Emoji</button>
-        <button className="btn" onClick={() => doPaste({color:true})}>Paste Color</button>
-        <button className="btn" onClick={() => doPaste({image:true})}>Paste Image</button>
-        <button className="btn primary" onClick={() => doPaste({label:true,sub:true,emoji:true,color:true,image:true,group:true})}>Paste All</button>
-        <button className="btn" onClick={() => setMenu(null)}>Close</button>
-      </div>
-    </BottomSheet>
-  ) : createPortal(
-    <div
-      className="ctxMenu"
-      style={{
-        position:"fixed", left:menu.x, top:menu.y, width:menu.w, height:menu.h,
-        background:"rgba(18,23,53,0.96)", border:"1px solid rgba(255,255,255,.10)",
-        borderRadius:12, boxShadow:"0 12px 28px rgba(0,0,0,.45)", padding:10, zIndex:9999,
-        display:"flex", flexDirection:"column", justifyContent:"space-between"
-      }}
-      onContextMenu={(e)=>e.preventDefault()}
-      onMouseDown={(e)=>e.stopPropagation()}
-    >
-      <div style={{ fontWeight:700, fontSize:13, marginBottom:6, opacity:.9 }}>Key actions</div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:6 }}>
-        {[
-          ["Copy",            ()=>doCopy()],
-          ["Paste Label",     ()=>doPaste({label:true})],
-          ["Paste Sub",       ()=>doPaste({sub:true})],
-          ["Paste Emoji",     ()=>doPaste({emoji:true})],
-          ["Paste Color",     ()=>doPaste({color:true})],
-          ["Paste Image",     ()=>doPaste({image:true})],
-        ].map(([label,fn])=>(
-          <button
-            key={label}
-            className="btn"
-            onClick={fn}
-            style={{ fontSize:12, padding:"4px 6px", lineHeight:1.1, whiteSpace:"nowrap" }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <div style={{ display:"flex", justifyContent:"flex-end", gap:6, marginTop:6 }}>
-        <button className="btn" onClick={()=>setMenu(null)} style={{ padding:"4px 8px", fontSize:12 }}>Close</button>
-        <button className="btn" onClick={()=>doPaste({label:true,sub:true,emoji:true,color:true,image:true,group:true})} style={{ padding:"4px 8px", fontSize:12 }}>Paste All</button>
-      </div>
-    </div>,
-    document.body
-  )
-)}
-
-
-    <canvas ref={canvasRef} style={{ display:"none" }} />
-
-    {/* Group legend overlay */}
-    {/* Disable absolute legend overlay in favour of horizontal legend bar. */}
-    {false && (
-      stageBoxRef.current && createPortal(
-        <div className="legendUI" style={{ left: 'auto', right: 12, top: 'auto', bottom: 12 }}>
-          <div className="legendTitle">Groups</div>
-          {groupLegend.map(([g, cols]) => {
-            const color = cols.length ? cols[0] : '#888';
-            return (
-              <div key={g} className="legendItem">
-                <div className="legendDot" style={{ background: color }} />
-                <div className="legendText">{g}</div>
-              </div>
-            );
-          })}
-        </div>, stageBoxRef.current
-      )
-    )}
-  </div>
-</div>
-
-</div>
-</div>
 
       {/* Footer links and disclaimer */}
       <footer className="footer">
