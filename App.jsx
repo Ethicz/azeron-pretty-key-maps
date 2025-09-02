@@ -1191,20 +1191,25 @@ export default function App(){
   }, [showMobileSettings, showMobileEdit]);
 
   // Fit zoom (responsive)
-  useEffect(()=>{
-    const ro = new ResizeObserver(()=>{
-      const el = containerRef.current; if(!el) return;
+  useEffect(() => {
+    const ro = new ResizeObserver(() => {
+      const el = containerRef.current;
+      if (!el) return;
       const pad = 24;
-      const availW = Math.max(200, el.clientWidth  - pad);
+      const availW = Math.max(200, el.clientWidth - pad);
       const availH = Math.max(200, el.clientHeight - pad);
       const zW = CANVAS_W > 0 ? availW / CANVAS_W : 1;
       const zH = CANVAS_H > 0 ? availH / CANVAS_H : 1;
       const z = Math.max(0.35, Math.min(1, Math.min(zW, zH)));
       setFitZoom(z);
+      // ✅ Set the initial zoom level to the fitZoom value on mobile
+      if (isMobile) {
+        setZoom(z);
+      }
     });
-    if(containerRef.current) ro.observe(containerRef.current);
-    return ()=> ro.disconnect();
-  },[CANVAS_W, CANVAS_H]);
+    if (containerRef.current) ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, [CANVAS_W, CANVAS_H, isMobile]); // ✅ Add isMobile dependency
 
   // Mobile pan (1-finger) + pinch (2-finger)
   useEffect(() => {
@@ -1253,7 +1258,7 @@ export default function App(){
         box.scrollTop  = panStart.sy + dy;
       } else if (pointers.size >= 2) {
         const d = dist();
-        if (lastDist) {
+        if (lastDist > 0) { // check lastDist is not 0
           const factor = d / lastDist;
           setZoom(z => clamp(+((z * factor)).toFixed(3), 0.35, 2));
         }
@@ -1280,9 +1285,10 @@ export default function App(){
       box.removeEventListener("pointercancel", onUp);
     };
   }, [isMobile]);
-  // was: const displayZoom = Math.min(zoom, fitZoom);
-const displayZoom = isMobile ? Math.min(zoom, fitZoom) : zoom;
-const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
+  
+  // ✅ Corrected zoom calculation to allow pinch-to-zoom on mobile
+  const displayZoom = zoom;
+  const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
 
 
   /* Profile switch */
