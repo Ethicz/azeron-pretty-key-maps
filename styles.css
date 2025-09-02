@@ -206,19 +206,22 @@ body{
 .legendDot{ width:12px; height:12px; border-radius:50%; border:1px solid rgba(0,0,0,.25); }
 .legendText{ font-weight:600; font-size:13px; opacity:.95; }
 
-/* Legend bar for mobile: spans full width of the stage area and lays out
-   group items horizontally. Appears below the header to avoid overlapping
-   the key tiles. */
+/* Add a vertical separator between legend items */
+.legendBar > *:not(:first-child) {
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+
 .legendBar{
   width: 100%;
-  display: flex;
+  display: flex ;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: 12px;
   padding: 6px 8px;
   margin-top: 4px;
-  margin-bottom: 6px;
+  margin-bottom: 6px; 
   /* subtle background to separate from stage grid */
   background: rgba(20, 22, 42, 0.5);
   border: 1px solid rgba(240,240,255,.22);
