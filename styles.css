@@ -216,6 +216,10 @@ body{
   box-shadow: 0 14px 28px rgba(0,0,0,.45), inset 0 0 0 1px var(--tile-inset);
   display:flex; flex-direction:column; padding:10px 12px;
   text-shadow: none;
+  /* Ensure cover images are clipped to the key tile boundaries on mobile. Without
+     overflow:hidden the absolutely positioned cover image can escape its
+     container and fill the viewport. */
+  overflow: hidden;
 }
 .key.gloss{ /* glass reflection like your sample */
   background:
