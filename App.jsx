@@ -1202,7 +1202,6 @@ export default function App(){
       const zH = CANVAS_H > 0 ? availH / CANVAS_H : 1;
       const z = Math.max(0.2, Math.min(1, Math.min(zW, zH))); // Allow smaller min zoom
       
-      // Only set the initial zoom once on mobile
       if (isMobile && !isInitialMobileZoomSet) {
         setZoom(z);
         setIsInitialMobileZoomSet(true);
@@ -2274,25 +2273,9 @@ export default function App(){
         </FullScreenSheet>
       )}
 
-      {/* Mapper */}
-      <div className="canvasWrap" ref={containerRef}>
-        <div className="panel" ref={panelRef}>
-          {groupLegend.length > 0 && (
-            <div className="legendBar">
-              <div className="legendTitle">Groups</div>
-              {groupLegend.map(([g, cols]) => {
-                const color = cols.length ? cols[0] : '#888';
-                return (
-                  <div key={g} className="legendItem">
-                    <div className="legendDot" style={{ background: color }} />
-                    <div className="legendText">{g}</div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          <div className="stageBox" ref={stageBoxRef}>
+      {/* ✅ Simplified main content structure */}
+      <div className="mainContent" ref={containerRef}>
+        <div className="stageBox" ref={stageBoxRef}>
             <div
               id="stage-root"
               ref={setStageEl}
@@ -2301,7 +2284,6 @@ export default function App(){
                 width: CANVAS_W,
                 height: CANVAS_H,
                 transform: `scale(${displayZoom})`,
-                // Grid background for the stage itself
                 backgroundImage: showGrid ? `
                   linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
                   linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px)
@@ -2316,6 +2298,19 @@ export default function App(){
                 }
               }}
             >
+              {groupLegend.length > 0 && isMobile && (
+                <div className="legendBar mobile">
+                  {groupLegend.map(([g, cols]) => {
+                    const color = cols.length ? cols[0] : '#888';
+                    return (
+                      <div key={g} className="legendItem">
+                        <div className="legendDot" style={{ background: color }} />
+                        <div className="legendText">{g}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               {lasso && (
                 <div
                   style={{
