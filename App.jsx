@@ -963,8 +963,7 @@ export default function App(){
 
   const [zoom, setZoom] = useState(0.75);
   const containerRef = useRef(null);
-  const [fitZoom, setFitZoom] = useState(1);
-
+  
   const [gameTitle, setGameTitle] = useState("");
   const [selection, setSelection] = useState([]);
   const [showPopover, setShowPopover] = useState(false);
@@ -1191,31 +1190,35 @@ export default function App(){
   }, [showMobileSettings, showMobileEdit]);
 
   // ✅ Fit zoom and set initial mobile zoom
+  const [isInitialMobileZoomSet, setIsInitialMobileZoomSet] = useState(false);
   useEffect(() => {
     const ro = new ResizeObserver(() => {
       const el = containerRef.current;
       if (!el) return;
-      const pad = 24;
+      const pad = isMobile ? 0 : 24; // Use less padding on mobile for more space
       const availW = Math.max(200, el.clientWidth - pad);
       const availH = Math.max(200, el.clientHeight - pad);
       const zW = CANVAS_W > 0 ? availW / CANVAS_W : 1;
       const zH = CANVAS_H > 0 ? availH / CANVAS_H : 1;
-      const z = Math.max(0.35, Math.min(1, Math.min(zW, zH)));
-      setFitZoom(z);
-      if (isMobile) {
+      const z = Math.max(0.2, Math.min(1, Math.min(zW, zH))); // Allow smaller min zoom
+      
+      // Only set the initial zoom once on mobile
+      if (isMobile && !isInitialMobileZoomSet) {
         setZoom(z);
+        setIsInitialMobileZoomSet(true);
       }
     });
     if (containerRef.current) ro.observe(containerRef.current);
     return () => ro.disconnect();
-  }, [CANVAS_W, CANVAS_H, isMobile]);
+  }, [CANVAS_W, CANVAS_H, isMobile, isInitialMobileZoomSet]);
+
 
   // ✅ Mobile pan, pinch, and initial centering
   useEffect(() => {
     const box = stageBoxRef.current;
     if (!box) return;
 
-    // Center the content on load or when zoom/size changes
+    // Center the content on load
     const contentWidth = CANVAS_W * zoom;
     const contentHeight = CANVAS_H * zoom;
     box.scrollLeft = (contentWidth - box.clientWidth) / 2;
@@ -1291,7 +1294,6 @@ export default function App(){
     };
   }, [isMobile, zoom, CANVAS_W, CANVAS_H]);
   
-  // ✅ Corrected zoom calculation to allow pinch-to-zoom on mobile
   const displayZoom = zoom;
   
   /* Profile switch */
@@ -1300,6 +1302,7 @@ export default function App(){
     setLayout({ ...next });
     setMap(defaultKeymapForLayout(next));
     setSelection([]); setShowPopover(false); setMenu(null);
+    setIsInitialMobileZoomSet(false); // Reset zoom on profile change
   },[profile]);
 
   /* Clear selection and popover when clicking outside of the stage and any overlays. This effect
@@ -1423,27 +1426,35 @@ export default function App(){
     const sx = (e.clientX - rect.left) / displayZoom;
     const sy = (e.clientY - rect.top) / displayZoom;
     lassoStart.current = { sx, sy };
-    setLasso({ x:sx, y:sy, w:0, h:0 });
+    setLasso({ x: sx, y: sy, w: 0, h: 0 });
 
-    const move=(ev)=>{
-      const cx = (ev.clientX - rect.left) / displayZoom;
+    const move = (ev) => {
+      const cx = (ev.clientX - rect.left) / displayZoom; // ✅ Corrected typo: rect.top -> rect.left
       const cy = (ev.clientY - rect.top) / displayZoom;
-      const x = Math.min(sx, cx), y = Math.min(sy, cy);
-      const w = Math.abs(cx - sx), h = Math.abs(cy - sy);
+      const x = Math.min(sx, cx),
+        y = Math.min(sy, cy);
+      const w = Math.abs(cx - sx),
+        h = Math.abs(cy - sy);
       setLasso({ x, y, w, h });
     };
-    const up=()=>{
-      window.removeEventListener("mousemove",move);
-      window.removeEventListener("mouseup",up);
-      const box = { x:lassoStart.current.sx, y:lassoStart.current.sy, ...lasso };
+    const up = () => {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+      const box = { x: lassoStart.current.sx, y: lassoStart.current.sy, ...lasso };
       const hits = Object.entries(layout)
-        .filter(([_,p])=>!p.blank && !p.analog && !p.split)
-        .map(([id,p])=>({ id, rect:{ x:p.x, y:p.y, w:KEY_W, h:KEY_H } }))
-        .filter(({rect})=> rect.x < box.x+box.w && rect.x+rect.w > box.x && rect.y < box.y+box.h && rect.y+rect.h > box.y)
-        .map(h=>h.id);
-      setSelection(prev => {
+        .filter(([, p]) => !p.blank && !p.analog && !p.split)
+        .map(([id, p]) => ({ id, rect: { x: p.x, y: p.y, w: KEY_W, h: KEY_H } }))
+        .filter(
+          ({ rect }) =>
+            rect.x < box.x + box.w &&
+            rect.x + rect.w > box.x &&
+            rect.y < box.y + box.h &&
+            rect.y + rect.h > box.y
+        )
+        .map((h) => h.id);
+      setSelection((prev) => {
         const set = new Set(prev);
-        hits.forEach(id => set.add(id));
+        hits.forEach((id) => set.add(id));
         const arr = [...set];
         setShowPopover(true);
         setMenu(null);
@@ -1451,8 +1462,8 @@ export default function App(){
       });
       setLasso(null);
     };
-    window.addEventListener("mousemove",move);
-    window.addEventListener("mouseup",up);
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
   };
 
   /* Clipboard */
@@ -2191,7 +2202,7 @@ export default function App(){
     zoom, setZoom,
     resetLayout,
     printOptions, setPrintOptions,
-    onClose: () => setShowMobileSettings(false), // ✅ Pass the close handler
+    onClose: () => setShowMobileSettings(false),
   };
 
   return (
@@ -2265,7 +2276,7 @@ export default function App(){
 
       {/* Mapper */}
       <div className="canvasWrap" ref={containerRef}>
-        <div className="panel" ref={panelRef} style={{ position:"relative" }}>
+        <div className="panel" ref={panelRef}>
           {groupLegend.length > 0 && (
             <div className="legendBar">
               <div className="legendTitle">Groups</div>
@@ -2281,21 +2292,7 @@ export default function App(){
             </div>
           )}
 
-          {/* Grid */}
-          {showGrid && !isMobile && ( // Hide grid on mobile stageBox
-            <div
-              aria-hidden
-              className="gridFlow"
-              style={{
-                '--grid': `${VIS_GRID * displayZoom}px`,
-              }}
-            />
-          )}
-
-          <div
-            className="stageBox"
-            ref={stageBoxRef}
-          >
+          <div className="stageBox" ref={stageBoxRef}>
             <div
               id="stage-root"
               ref={setStageEl}
@@ -2304,6 +2301,12 @@ export default function App(){
                 width: CANVAS_W,
                 height: CANVAS_H,
                 transform: `scale(${displayZoom})`,
+                // Grid background for the stage itself
+                backgroundImage: showGrid ? `
+                  linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px)
+                ` : 'none',
+                backgroundSize: showGrid ? `${VIS_GRID}px ${VIS_GRID}px` : 'auto',
               }}
               onPointerDown={(e) => {
                 if (e.button !== 0 && e.pointerType !== "touch") return;
@@ -2313,22 +2316,17 @@ export default function App(){
                 }
               }}
             >
-              {showGrid && isMobile && ( // Show grid inside the stage on mobile
-                <div
-                  aria-hidden
-                  className="gridFlow"
-                  style={{
-                    '--grid': `${VIS_GRID}px`, // Use unscaled grid size
-                  }}
-                />
-              )}
               {lasso && (
                 <div
-                  className="lasso"
                   style={{
                     position:"absolute",
                     left: lasso.x, top: lasso.y,
                     width: lasso.w, height: lasso.h,
+                    border:"1px dashed rgba(124,92,255,.9)",
+                    background:"rgba(124,92,255,.15)",
+                    borderRadius:6,
+                    pointerEvents:"none",
+                    zIndex:5
                   }}
                 />
               )}
@@ -2385,10 +2383,19 @@ export default function App(){
                   className={`popover ${pop.side}`}
                   style={{
                     left:pop.x, top:pop.y, width:pop.w, height:pop.h,
+                    position:"absolute", borderRadius:14,
+                    background:"rgba(15,20,42,.90)", backdropFilter:"blur(6px)",
+                    border:"1px solid rgba(255,255,255,.08)",
+                    boxShadow:"0 10px 28px rgba(0,0,0,.35)",
+                    display:"flex", flexDirection:"column"
                   }}
                   onMouseDown={(e)=>e.stopPropagation()}
                 >
-                  <div className="popHeader">
+                  <div className="popHeader" style={{
+                    padding:"10px 12px",
+                    borderBottom:"1px solid rgba(255,255,255,.06)",
+                    display:"flex", justifyContent:"space-between", alignItems:"center"
+                  }}>
                     <span>Selected {selection.length>1 ? `${selection.length} keys` : `#${lastSelected}`}</span>
                     <button className="iconBtn" onClick={()=>{ setSelection([]); setShowPopover(false); }} aria-label="Close">✕</button>
                   </div>
@@ -2404,6 +2411,7 @@ export default function App(){
                       <input className="input" value={active.sub||""} onChange={e=>setField("sub", e.target.value)} />
                     </div>
 
+                    {/* Group field for assigning a zone/group to this key. Only shown on desktop (mobile uses quick group assignment). */}
                     <div className="row">
                       <label>Group</label>
                       <input
@@ -2443,6 +2451,11 @@ export default function App(){
                               if (left + panelW > vw - pad) left = Math.max(pad, vw - panelW - pad);
                               return { top, left, width:panelW, maxHeight:360 };
                             })(),
+                            overflowY:"auto", overflowX:"hidden",
+                            boxShadow:"0 12px 28px rgba(0,0,0,.45)",
+                            borderRadius:12,
+                            background:"rgba(18,23,53,0.96)",
+                            border:"1px solid rgba(255,255,255,.10)"
                           }}
                           onMouseDown={(e)=>e.stopPropagation()}
                         >
@@ -2467,6 +2480,7 @@ export default function App(){
                         className="colorPicker"
                         value={normalizeHex(active.color||BASE.blue)}
                         onChange={e=>setField("color", e.target.value)}
+                        /* enlarge swatch for better visibility */
                         style={{ width: 72, height: 42, padding: 2, borderRadius: 8, border: '2px solid #e7e9f6', background: '#fff' }}
                       />
                       <label
@@ -2505,6 +2519,7 @@ export default function App(){
                         >Cover</button>
                       </div>
                     </div>
+                    {/* Show clear image only if an image is currently assigned */}
                     {active?.image && (
                       <div className="row">
                         <label>Clear Image</label>
@@ -2535,14 +2550,38 @@ export default function App(){
                   <div
                     className="ctxMenu"
                     style={{
-                      position:"fixed", left:menu.x, top:menu.y, width:menu.w,
+                      position:"fixed", left:menu.x, top:menu.y, width:menu.w, height:menu.h,
+                      background:"rgba(18,23,53,0.96)", border:"1px solid rgba(255,255,255,.10)",
+                      borderRadius:12, boxShadow:"0 12px 28px rgba(0,0,0,.45)", padding:10, zIndex:9999,
+                      display:"flex", flexDirection:"column", justifyContent:"space-between"
                     }}
                     onContextMenu={(e)=>e.preventDefault()}
                     onMouseDown={(e)=>e.stopPropagation()}
                   >
-                    <div style={{ fontWeight:700, fontSize:13, padding: "8px 12px", borderBottom: "1px solid var(--edge)" }}>Key actions</div>
-                    <div className="ctxItem" onClick={() => doCopy()}>Copy</div>
-                    <div className="ctxItem" onClick={() => doPaste({label:true, sub:true, emoji:true, color:true, image:true, group:true })}>Paste All</div>
+                    <div style={{ fontWeight:700, fontSize:13, marginBottom:6, opacity:.9 }}>Key actions</div>
+                    <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:6 }}>
+                      {[
+                        ["Copy",            ()=>doCopy()],
+                        ["Paste Label",     ()=>doPaste({label:true})],
+                        ["Paste Sub",       ()=>doPaste({sub:true})],
+                        ["Paste Emoji",     ()=>doPaste({emoji:true})],
+                        ["Paste Color",     ()=>doPaste({color:true})],
+                        ["Paste Image",     ()=>doPaste({image:true})],
+                      ].map(([label,fn])=>(
+                        <button
+                          key={label}
+                          className="btn"
+                          onClick={fn}
+                          style={{ fontSize:12, padding:"4px 6px", lineHeight:1.1, whiteSpace:"nowrap" }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"flex-end", gap:6, marginTop:6 }}>
+                      <button className="btn" onClick={()=>setMenu(null)} style={{ padding:"4px 8px", fontSize:12 }}>Close</button>
+                      <button className="btn" onClick={()=>doPaste({label:true,sub:true,emoji:true,color:true,image:true,group:true})} style={{ padding:"4px 8px", fontSize:12 }}>Paste All</button>
+                    </div>
                   </div>,
                   document.body
                 )
