@@ -1485,6 +1485,21 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
   const MobileEditContent = () => {
     if (!lastSelected) return null;
     const activeKey = map[lastSelected] || {};
+    // Local input states for label, sub and group. These avoid updating the
+    // keymap on every keystroke, which on some mobile keyboards (e.g. Samsung
+    // Galaxy S25 Ultra) causes the input to lose focus and the keyboard to
+    // collapse. Instead, we update the global keymap only when the user
+    // presses the Continue button.
+    const [labelInput, setLabelInput] = React.useState(activeKey.label || "");
+    const [subInput, setSubInput] = React.useState(activeKey.sub || "");
+    const [groupInput, setGroupInput] = React.useState(activeKey.group || "");
+    // When selection changes or activeKey updates (e.g. switching between keys),
+    // sync the local inputs to reflect the new key values.
+    React.useEffect(() => {
+      setLabelInput(activeKey.label || "");
+      setSubInput(activeKey.sub || "");
+      setGroupInput(activeKey.group || "");
+    }, [lastSelected, activeKey.label, activeKey.sub, activeKey.group]);
     // Local state for quick group name in multi-edit mode
     const [quickGroupName, setQuickGroupName] = React.useState("");
     const flatBg = normalizeHex(activeKey.color || BASE.blue);
@@ -1619,7 +1634,10 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
                 onClick={() => {
                   const name = quickGroupName.trim();
                   if (name) {
+                    // Update all selected keys immediately via setField. Also update
+                    // the local group input so subsequent edits reflect the new group.
                     setField('group', name);
+                    setGroupInput(name);
                     setQuickGroupName('');
                   }
                 }}
@@ -1682,8 +1700,8 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
             <input
               className="input"
               placeholder="Label"
-              value={activeKey.label || ''}
-              onChange={e => setField('label', e.target.value)}
+              value={labelInput}
+              onChange={e => setLabelInput(e.target.value)}
               style={{ width: '100%' }}
             />
           </div>
@@ -1691,8 +1709,8 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
             <input
               className="input"
               placeholder="Sub"
-              value={activeKey.sub || ''}
-              onChange={e => setField('sub', e.target.value)}
+              value={subInput}
+              onChange={e => setSubInput(e.target.value)}
               style={{ width: '100%' }}
             />
           </div>
@@ -1701,8 +1719,8 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
             <input
               className="input"
               placeholder="Group"
-              value={activeKey.group || ''}
-              onChange={e => setField('group', e.target.value)}
+              value={groupInput}
+              onChange={e => setGroupInput(e.target.value)}
               style={{ width: '100%' }}
             />
           </div>
@@ -1832,7 +1850,26 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
               </button>
             ))}
           </div>
-          <button className="btn" onClick={() => setShowMobileEdit(false)} style={{ marginTop: 8 }}>Continue</button>
+          <button
+            className="btn"
+            onClick={() => {
+              // Commit local edits to the keymap before closing. Update all selected keys
+              // with the current label, sub, and group values. This avoids re-rendering
+              // the whole app on every keystroke and preserves keyboard focus during editing.
+              setMap(prev => {
+                const next = { ...prev };
+                selection.forEach(id => {
+                  const base = next[id] || {};
+                  next[id] = { ...base, label: labelInput, sub: subInput, group: groupInput };
+                });
+                return next;
+              });
+              setShowMobileEdit(false);
+            }}
+            style={{ marginTop: 8 }}
+          >
+            Continue
+          </button>
         </div>
       </div>
     );
@@ -2309,7 +2346,9 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
                 zIndex: 30,
                 minWidth: 200,
               }}
-              onMouseLeave={() => setShowMobileSaveMenu(false)}
+              onMouseLeave={!isMobile ? () => setShowMobileSaveMenu(false) : undefined}
+              onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
             >
               <button
                 className="btn"
