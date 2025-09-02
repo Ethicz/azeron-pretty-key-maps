@@ -2101,7 +2101,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
       }
     }
     // 7) Footer
-    const footer = "Created by JimmyCPW — not affiliated with Azeron";
+    const footer = "Generated with Azeron Keymap Helper — not affiliated with Azeron";
     // draw this in white so it stands out on the neutral footer background
     ctx.fillStyle = "#ffffff";
     ctx.font = "600 14px Montserrat, ui-sans-serif";
@@ -2173,9 +2173,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
         canvasHeight: CANVAS_H,
         backgroundColor: "#0b0f1d",
         pixelRatio: Math.max(2, Math.floor(window.devicePixelRatio || 1)),
-        style: { transform: "none" },
-        cacheBust: true,
-        useCORS: true
+        style: { transform: "none" }
       });
 
       // On mobile we need to append the anchor to the DOM for download to work
@@ -2625,7 +2623,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
           {/* Mobile legend bar: when groups are defined on mobile, show a horizontal legend
               banner across the top of the stage area. This sits below the header and
               above the map so it never overlaps keys. */}
-          {groupLegend.length > 0 && (
+          {isMobile && groupLegend.length > 0 && (
             <div className="legendBar">
               <div className="legendTitle" style={{ marginRight: 8 }}>Groups</div>
               <div className="legendRow">
@@ -2964,22 +2962,23 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     <canvas ref={canvasRef} style={{ display:"none" }} />
 
     {/* Group legend overlay */}
-    {/* Disable absolute legend overlay in favour of horizontal legend bar. */}
-    {false && (
-      stageBoxRef.current && createPortal(
-        <div className="legendUI" style={{ left: 'auto', right: 12, top: 'auto', bottom: 12 }}>
-          <div className="legendTitle">Groups</div>
-          {groupLegend.map(([g, cols]) => {
-            const color = cols.length ? cols[0] : '#888';
-            return (
-              <div key={g} className="legendItem">
-                <div className="legendDot" style={{ background: color }} />
-                <div className="legendText">{g}</div>
-              </div>
-            );
-          })}
-        </div>, stageBoxRef.current
-      )
+    {groupLegend.length > 0 && (
+      isMobile
+        ? null /* mobile legend will render above the stage */
+        : (stageBoxRef.current && createPortal(
+            <div className="legendUI" style={{ left: 'auto', right: 12, top: 'auto', bottom: 12 }}>
+              <div className="legendTitle">Groups</div>
+              {groupLegend.map(([g, cols]) => {
+                const color = cols.length ? cols[0] : '#888';
+                return (
+                  <div key={g} className="legendItem">
+                    <div className="legendDot" style={{ background: color }} />
+                    <div className="legendText">{g}</div>
+                  </div>
+                );
+              })}
+            </div>, stageBoxRef.current)
+          )
     )}
   </div>
 </div>
