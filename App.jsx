@@ -1272,11 +1272,18 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
             setMap(prev => {
               const next = { ...prev };
               Object.keys(layout).forEach(id => {
+                // Skip blank/analog/split keys and keys belonging to a group (so their colors remain locked)
                 if (layout[id].blank || layout[id].analog || layout[id].split) return;
+                if (prev[id] && prev[id].group) return;
                 next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
               });
-              next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
-              next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
+              // Randomize MU and MD if they are not grouped
+              if (!(prev["MU"] && prev["MU"].group)) {
+                next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
+              }
+              if (!(prev["MD"] && prev["MD"].group)) {
+                next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
+              }
               return next;
             });
           }}
@@ -1467,7 +1474,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     const labelSize = activeKey.label ? (activeKey.label.length > 30 ? 14 : activeKey.label.length > 22 ? 16 : 18) : 18;
     const subSize   = activeKey.sub   ? (activeKey.sub.length   > 28 ? 13 : activeKey.sub.length   > 20 ? 14 : 16) : 16;
 
-    // Hidden input to invoke the native OS emoji picker when available (mobile).
+    // Hidden input reference (legacy). The native OS emoji picker is no longer used on mobile; we use the custom emoji picker for consistency.
     const emojiNativeRef = React.useRef(null);
     // Define the list of key actions. The last action spans both columns.
     const keyActions = [
@@ -1681,53 +1688,16 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
             />
           </div>
           <div className="row">
-            {!isMobile ? (
-              <button
-                ref={emojiButtonRef}
-                className="btn"
-                style={{ width: '100%', padding: '6px 10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                onClick={() => setEmojiOpen(v => !v)}
-              >
-                <SmileIcon />
-                <span>{activeKey.emoji || 'Pick Emoji'}</span>
-              </button>
-            ) : (
-              <>
-                <button
-                  ref={emojiButtonRef}
-                  className="btn"
-                  style={{ width: '100%', padding: '6px 10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                  onClick={() => {
-                    const input = emojiNativeRef.current;
-                    if (input && input.showPicker) {
-                      try {
-                        input.showPicker();
-                      } catch (err) {
-                        setEmojiOpen(true);
-                      }
-                    } else {
-                      setEmojiOpen(true);
-                    }
-                  }}
-                >
-                  <SmileIcon />
-                  <span>{activeKey.emoji || 'Emoji'}</span>
-                </button>
-                <input
-                  ref={emojiNativeRef}
-                  type="text"
-                  inputMode="text"
-                  style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
-                  onChange={e => {
-                    const val = e.target.value;
-                    if (val) {
-                      setField('emoji', val[val.length - 1]);
-                      e.target.value = '';
-                    }
-                  }}
-                />
-              </>
-            )}
+            {/* Use the same custom emoji picker on both desktop and mobile. Clicking toggles the picker. */}
+            <button
+              ref={emojiButtonRef}
+              className="btn"
+              style={{ width: '100%', padding: '6px 10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              onClick={() => setEmojiOpen(v => !v)}
+            >
+              <SmileIcon />
+              <span>{activeKey.emoji || 'Pick Emoji'}</span>
+            </button>
           </div>
           {emojiOpen && createPortal(
             <>
@@ -1884,11 +1854,18 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
             setMap(prev => {
               const next = { ...prev };
               Object.keys(layout).forEach(id => {
+                // Skip blank/analog/split keys and group-locked keys
                 if (layout[id].blank || layout[id].analog || layout[id].split) return;
+                if (prev[id] && prev[id].group) return;
                 next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
               });
-              next['MU'] = { ...(next['MU'] || {}), color: seededRandomColor('MU' + Date.now()) };
-              next['MD'] = { ...(next['MD'] || {}), color: seededRandomColor('MD' + Date.now()) };
+              // Randomize MU and MD if they are not grouped
+              if (!(prev['MU'] && prev['MU'].group)) {
+                next['MU'] = { ...(next['MU'] || {}), color: seededRandomColor('MU' + Date.now()) };
+              }
+              if (!(prev['MD'] && prev['MD'].group)) {
+                next['MD'] = { ...(next['MD'] || {}), color: seededRandomColor('MD' + Date.now()) };
+              }
               return next;
             });
           }}
@@ -2256,6 +2233,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
               aria-pressed={multi}
               title="Toggle multi‑select"
               onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
             >
               <MultiIcon />
             </button>
@@ -2272,6 +2250,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
                   }
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
               >
                 <EditIcon />
               </button>
@@ -2317,11 +2296,18 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
                 setMap(prev => {
                   const next = { ...prev };
                   Object.keys(layout).forEach(id => {
+                    // Skip blank/analog/split keys and group-locked keys
                     if (layout[id].blank || layout[id].analog || layout[id].split) return;
+                    if (prev[id] && prev[id].group) return;
                     next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
                   });
-                  next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
-                  next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
+                  // Randomize MU and MD if they are not grouped
+                  if (!(prev["MU"] && prev["MU"].group)) {
+                    next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
+                  }
+                  if (!(prev["MD"] && prev["MD"].group)) {
+                    next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
+                  }
                   return next;
                 });
               }}
