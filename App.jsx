@@ -667,6 +667,205 @@ function DevicePicker({ value, onChange }) {
 }
 
 /* =========================
+   Unified Top Bar Controls
+   ========================= */
+function TopBarControls({
+  isMobile,
+  profile,
+  setProfile,
+  locked,
+  setLocked,
+  multi,
+  setMulti,
+  snapGrid,
+  setSnapGrid,
+  showGrid,
+  setShowGrid,
+  gloss,
+  setGloss,
+  showNumbers,
+  setShowNumbers,
+  invertLayout,
+  randomizeColors,
+  gameTitle,
+  setGameTitle,
+  layout,
+  map,
+  setMap,
+  saveImage,
+  exportUI,
+  zoom,
+  setZoom,
+  resetLayout,
+  printOptions,
+  setPrintOptions,
+}) {
+  return (
+    <div className="toolbarWrap">
+      {/* Bar 1: Device and Toggles */}
+      <div className="rowWrap">
+        <DevicePicker value={profile} onChange={setProfile} />
+        <label className="badge">
+          <input type="checkbox" checked={locked} onChange={(e) => setLocked(e.target.checked)} /> Lock
+        </label>
+        <label className="badge">
+          <input type="checkbox" checked={multi} onChange={(e) => setMulti(e.target.checked)} /> Multi
+        </label>
+        <label className="badge">
+          <input type="checkbox" checked={snapGrid} onChange={(e) => setSnapGrid(e.target.checked)} /> Snap
+        </label>
+        <label className="badge">
+          <input type="checkbox" checked={showGrid} onChange={(e) => setShowGrid(e.target.checked)} /> Grid
+        </label>
+        <label className="badge">
+          <input type="checkbox" checked={gloss} onChange={(e) => setGloss(e.target.checked)} /> Gloss
+        </label>
+        <label className="badge">
+          <input type="checkbox" checked={showNumbers} onChange={(e) => setShowNumbers(e.target.checked)} /> #
+        </label>
+        <button className="btn" onClick={invertLayout}>Invert</button>
+        <button className="btn" title="Randomize colors" onClick={randomizeColors}>🎲</button>
+      </div>
+
+      {/* Bar 2: Title and Main Actions */}
+      <div className="rowWrap centerWrap">
+        <input
+          className="input titleInput"
+          placeholder="Title of your game"
+          value={gameTitle}
+          onChange={(e) => setGameTitle(e.target.value)}
+        />
+        {/* THEME / SAVE / LOAD */}
+        <div className="compactMenuWrap">
+          <button
+            className="iconToggle"
+            title="Theme & file actions"
+            onClick={(e) => {
+              const menu = e.currentTarget.nextSibling;
+              menu.classList.toggle("open");
+            }}
+          >
+            <ThemeIcon />
+          </button>
+          <div className="compactMenu" onMouseLeave={(e) => e.currentTarget.classList.remove("open")}>
+            <div className="row">
+              <select
+                className="select"
+                defaultValue="__none__"
+                aria-label="Apply preset theme"
+                onChange={(e) => {
+                  const id = e.target.value;
+                  if (id === "__none__") return;
+                  setMap((prev) => applyTheme(prev, layout, id));
+                }}
+              >
+                <option value="__none__">Apply preset theme…</option>
+                {(() => {
+                  const byCat = THEMES.reduce((acc, t) => {
+                    const k = t.cat || "Other";
+                    (acc[k] ||= []).push(t);
+                    return acc;
+                  }, {});
+                  Object.values(byCat).forEach((arr) => arr.sort((a, b) => a.name.localeCompare(b.name)));
+                  const order = ["Core", "Controllers", "Games", "Color Vision", "Other"];
+                  const orderedCats = [...order.filter((k) => byCat[k]), ...Object.keys(byCat).filter((k) => !order.includes(k))];
+                  return orderedCats.map((cat) => (
+                    <optgroup key={cat} label={cat}>
+                      {byCat[cat].map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                    </optgroup>
+                  ));
+                })()}
+              </select>
+            </div>
+            <div className="row">
+              <button className="btn" onClick={() => {
+                  const payload = { version: 14, profile, layout, map, gameTitle, gloss, showNumbers };
+                  const a = document.createElement("a");
+                  a.href = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
+                  a.download = `azeron_${profile}_theme.json`;
+                  a.click();
+                  URL.revokeObjectURL(a.href);
+                }}
+              >
+                <SaveIcon />&nbsp; Save Theme JSON
+              </button>
+            </div>
+            <div className="row">
+              <button className="btn" onClick={() => {
+                  const inp = document.createElement("input");
+                  inp.type = "file";
+                  inp.accept = "application/json,.json";
+                  inp.onchange = async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    try {
+                      const data = JSON.parse(await f.text());
+                      const next = data.layout ? data.layout.positions || data.layout : LAYOUTS[data.profile || profile] || LAYOUTS[profile];
+                      if (data.profile) setProfile(data.profile);
+                      if (next) setLayout({ ...next });
+                      if (data.map) setMap(data.map);
+                      if (data.gameTitle != null) setGameTitle(data.gameTitle);
+                      if (data.gloss != null) setGloss(!!data.gloss);
+                      if (data.showNumbers != null) setShowNumbers(!!data.showNumbers);
+                    } catch {
+                      alert("Failed to load theme");
+                    }
+                  };
+                  inp.click();
+                }}
+              >
+                <FolderIcon />&nbsp; Load Theme JSON
+              </button>
+            </div>
+            <div className="row">
+              <button className="btn" onClick={(e) => e.currentTarget.closest(".compactMenu").classList.remove("open")}>Close</button>
+            </div>
+          </div>
+        </div>
+        {/* Save images */}
+        <div className="saveMenuWrap">
+          <button className="btn primary" onClick={(e) => e.currentTarget.nextSibling.classList.toggle('open')}>
+            Save <span style={{ marginLeft: 8 }}>▾</span>
+          </button>
+          <div className="saveMenu" onMouseLeave={(e) => e.currentTarget.classList.remove('open')}>
+            <button className="btn" onClick={saveImage}>Save printer friendly PNG</button>
+            <button className="btn" onClick={exportUI}>Save colored UI PNG</button>
+          </div>
+        </div>
+        {!isMobile && (
+          <>
+            <button className="iconToggle" title="Zoom Out" onClick={() => setZoom((z) => Math.max(0.4, +(z - 0.1).toFixed(2)))}><ZoomOutIcon /></button>
+            <button className="iconToggle" title="Zoom In" onClick={() => setZoom((z) => Math.min(2, +(z + 0.1).toFixed(2)))}><ZoomInIcon /></button>
+          </>
+        )}
+        <button className="btn iconLabel" onClick={resetLayout}>
+          <ResetIcon size={16} />
+          <span>Reset Layout</span>
+        </button>
+      </div>
+      
+      {/* Bar 3: Print Options */}
+      <div className="rowWrap printOptionsWrap">
+        <div className="rowTitle">Print & Export Options</div>
+        <label className="badge">
+          <input type="checkbox" checked={printOptions.includeTitle} onChange={(e) => setPrintOptions(opt => ({ ...opt, includeTitle: e.target.checked }))} /> Title
+        </label>
+        <label className="badge">
+          <input type="checkbox" checked={printOptions.includeLegend} onChange={(e) => setPrintOptions(opt => ({ ...opt, includeLegend: e.target.checked }))} /> Legend
+        </label>
+        <label className="badge">
+          <input type="checkbox" checked={printOptions.showColors} onChange={(e) => setPrintOptions(opt => ({ ...opt, showColors: e.target.checked }))} /> Colors
+        </label>
+        <label className="badge">
+          <input type="checkbox" checked={printOptions.showNumbers} onChange={(e) => setPrintOptions(opt => ({ ...opt, showNumbers: e.target.checked }))} /> Numbers
+        </label>
+      </div>
+    </div>
+  );
+}
+
+
+/* =========================
    Main App
    ========================= */
    // BottomSheet uses React.forwardRef so we can attach a ref to the root element for click‑away detection
@@ -1265,218 +1464,30 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     });
   };
 
-  // Mobile settings sheet content replicating the desktop top bar
-  const MobileSettingsContent = () => (
-    <div className="toolbarWrap">
-      {/* Bar 1 */}
-      <div className="rowWrap">
-        <DevicePicker value={profile} onChange={setProfile} />
+  const randomizeColors = () => {
+    setMap(prev => {
+      const next = { ...prev };
+      Object.keys(layout).forEach(id => {
+        if (layout[id].blank || layout[id].analog || layout[id].split) return;
+        if (prev[id] && prev[id].group) return;
+        next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
+      });
+      if (!(prev["MU"] && prev["MU"].group)) {
+        next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
+      }
+      if (!(prev["MD"] && prev["MD"].group)) {
+        next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
+      }
+      return next;
+    });
+  };
 
-        <label className="badge"><input type="checkbox" checked={locked} onChange={e=>setLocked(e.target.checked)} /> Lock</label>
-        {/* Hide the Multi toggle on mobile since multi‑select is controlled via the top‑bar multi icon */}
-        {!isMobile && (
-          <label className="badge"><input type="checkbox" checked={multi} onChange={e=>setMulti(e.target.checked)} /> Multi</label>
-        )}
-        <label className="badge"><input type="checkbox" checked={snapGrid} onChange={e=>setSnapGrid(e.target.checked)} /> Snap</label>
-        <label className="badge"><input type="checkbox" checked={showGrid} onChange={e=>setShowGrid(e.target.checked)} /> Grid</label>
-        <label className="badge"><input type="checkbox" checked={gloss} onChange={e=>setGloss(e.target.checked)} /> Gloss</label>
-        <label className="badge"><input type="checkbox" checked={showNumbers} onChange={e=>setShowNumbers(e.target.checked)} /> #</label>
-
-        <button className="btn" onClick={invertLayout}>Invert</button>
-        <button
-          className="btn"
-          title="Randomize colors"
-          onClick={() => {
-            setMap(prev => {
-              const next = { ...prev };
-              Object.keys(layout).forEach(id => {
-                // Skip blank/analog/split keys and keys belonging to a group (so their colors remain locked)
-                if (layout[id].blank || layout[id].analog || layout[id].split) return;
-                if (prev[id] && prev[id].group) return;
-                next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
-              });
-              // Randomize MU and MD if they are not grouped
-              if (!(prev["MU"] && prev["MU"].group)) {
-                next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
-              }
-              if (!(prev["MD"] && prev["MD"].group)) {
-                next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
-              }
-              return next;
-            });
-          }}
-        >
-          🎲
-        </button>
-      </div>
-
-      {/* Bar 2 */}
-      <div className="rowWrap centerWrap">
-        <input
-          className="input titleInput titleInputXL"
-          placeholder="Title of your game"
-          value={gameTitle}
-          onChange={e=>setGameTitle(e.target.value)}
-          style={{ maxWidth:620, minWidth:260 }}
-        />
-
-        {/* THEME / SAVE / LOAD */}
-        <div className="compactMenuWrap">
-          <button
-            className="iconToggle"
-            title="Theme & file actions"
-            onClick={(e)=>{
-              const menu = e.currentTarget.nextSibling;
-              menu.classList.toggle("open");
-            }}
-          >
-            <ThemeIcon />
-          </button>
-          <div
-            className="compactMenu"
-            onMouseLeave={(e)=>e.currentTarget.classList.remove("open")}
-          >
-            <div className="row">
-              <select
-                className="select"
-                defaultValue="__none__"
-                aria-label="Apply preset theme"
-                onChange={e=>{
-                  const id = e.target.value;
-                  if (id === "__none__") return;
-                  setMap(prev => applyTheme(prev, layout, id));
-                }}
-              >
-                <option value="__none__">Apply preset theme…</option>
-                {(() => {
-                  const byCat = THEMES.reduce((acc, t) => {
-                    const k = t.cat || "Other";
-                    (acc[k] ||= []).push(t);
-                    return acc;
-                  }, {});
-                  Object.values(byCat).forEach(arr =>
-                    arr.sort((a,b) => a.name.localeCompare(b.name))
-                  );
-                  const order = ["Core", "Controllers", "Games", "Color Vision", "Other"];
-                  const orderedCats = [
-                    ...order.filter(k => byCat[k]),
-                    ...Object.keys(byCat).filter(k => !order.includes(k)),
-                  ];
-                  return orderedCats.map(cat => (
-                    <optgroup key={cat} label={cat}>
-                      {byCat[cat].map(t => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
-                    </optgroup>
-                  ));
-                })()}
-              </select>
-            </div>
-
-            <div className="row">
-              <button
-                className="btn"
-                onClick={()=>{
-                  const payload = { version: 14, profile, layout, map, gameTitle, gloss, showNumbers };
-                  const a = document.createElement("a");
-                  a.href = URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)], { type:"application/json" }));
-                  a.download = `azeron_${profile}_theme.json`;
-                  a.click(); URL.revokeObjectURL(a.href);
-                }}
-              >
-                <SaveIcon />&nbsp; Save Theme JSON
-              </button>
-            </div>
-
-            <div className="row">
-              <button
-                className="btn"
-                onClick={()=>{
-                  const inp = document.createElement("input");
-                  inp.type="file"; inp.accept="application/json,.json";
-                  inp.onchange = async (e)=>{
-                    const f=e.target.files?.[0]; if(!f) return;
-                    try{
-                      const data = JSON.parse(await f.text());
-                      const next = data.layout ? (data.layout.positions || data.layout) : (LAYOUTS[data.profile||profile] || LAYOUTS[profile]);
-                      if(data.profile) setProfile(data.profile);
-                      if(next) setLayout({ ...next });
-                      if(data.map) setMap(data.map);
-                      if(data.gameTitle!=null) setGameTitle(data.gameTitle);
-                      if(data.gloss!=null) setGloss(!!data.gloss);
-                      if(data.showNumbers!=null) setShowNumbers(!!data.showNumbers);
-                    }catch{ alert("Failed to load theme"); }
-                  };
-                  inp.click();
-                }}
-              >
-                <FolderIcon />&nbsp; Load Theme JSON
-              </button>
-            </div>
-            <div className="row">
-              <button className="btn" onClick={(e)=>e.currentTarget.closest(".compactMenu").classList.remove("open")}>Close</button>
-            </div>
-          </div>
-        </div>
-
-        {/* Save images */}
-        <div style={{ position: "relative" }}>
-          <button
-            className="btn primary"
-            title="Save"
-            onClick={(e) => {
-              const m = e.currentTarget.nextSibling;
-              m.style.display = m.style.display === "block" ? "none" : "block";
-            }}
-            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#0b1f6f", borderColor:"rgba(255,255,255,.14)" }}
-          >
-            Save <span style={{ marginLeft: 8 }}>▾</span>
-          </button>
-          <div
-            style={{
-              position:"absolute",
-              top:"calc(100% + 6px)",
-              right:0,
-              display:"none",
-              background:"rgba(18,23,53,0.96)",
-              border:"1px solid rgba(255,255,255,.10)",
-              borderRadius:12,
-              boxShadow:"0 12px 28px rgba(0,0,0,.45)",
-              padding:8,
-              zIndex:10,
-              minWidth:220
-            }}
-            onMouseLeave={(e)=>{ e.currentTarget.style.display="none"; }}
-          >
-            <button className="btn" style={{ width:"100%", marginBottom:6 }} onClick={saveImage}>Save printer friendly PNG</button>
-            <button className="btn" style={{ width:"100%" }} onClick={exportUI}>Save colored UI PNG</button>
-          </div>
-        </div>
-
-
-        {/* Zoom controls are omitted on mobile devices; use pinch‑to‑zoom instead */}
-        {!isMobile && (
-          <>
-            <button className="iconToggle" title="Zoom Out" onClick={() => setZoom(z => Math.max(0.4, +(z - 0.1).toFixed(2)))}><ZoomOutIcon /></button>
-            <button className="iconToggle" title="Zoom In"  onClick={() => setZoom(z => Math.min(2,   +(z + 0.1).toFixed(2)))}><ZoomInIcon /></button>
-          </>
-        )}
-
-        <button
-          className="btn iconLabel"
-          onClick={()=>{
-            const next = LAYOUTS[profile] || FALLBACK.positions;
-            setLayout({ ...next });
-            setMap(defaultKeymapForLayout(next));
-            setSelection([]); setShowPopover(false); setMenu(null);
-          }}
-        >
-          <ResetIcon size={16} />
-          <span>Reset Layout</span>
-        </button>
-      </div>
-    </div>
-  );
+  const resetLayout = () => {
+    const next = LAYOUTS[profile] || FALLBACK.positions;
+    setLayout({ ...next });
+    setMap(defaultKeymapForLayout(next));
+    setSelection([]); setShowPopover(false); setMenu(null);
+  };
 
   // Mobile edit overlay content. Displays a preview of the currently selected key and
   // provides controls for editing label, sub label, emoji, color, image and image mode.
@@ -1875,84 +1886,6 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     );
   };
 
-  // MobileSettingsPanel presents settings in a simple vertical list for small screens.
-  // It includes toggles for lock/multi/snap/grid/gloss/numbers, buttons to invert the layout,
-  // randomize colors, adjust zoom, reset the layout, and a close button. A DevicePicker is
-  // provided to switch between supported devices.
-  const MobileSettingsPanel = () => {
-    return (
-      <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontWeight: 700, fontSize: 14 }}>Settings</div>
-        {/* Device picker for hardware profile */}
-        <DevicePicker value={profile} onChange={setProfile} />
-        {/* Profile selection removed completely per user request */}
-        {/* Toggles for layout and appearance */}
-        <label className="badge"><input type="checkbox" checked={locked} onChange={e => setLocked(e.target.checked)} /> Lock</label>
-        {/* Hide the Multi toggle on mobile; multi‑select is controlled via the top‑bar multi icon */}
-        {!isMobile && (
-          <label className="badge"><input type="checkbox" checked={multi} onChange={e => setMulti(e.target.checked)} /> Multi</label>
-        )}
-        <label className="badge"><input type="checkbox" checked={snapGrid} onChange={e => setSnapGrid(e.target.checked)} /> Snap</label>
-        <label className="badge"><input type="checkbox" checked={showGrid} onChange={e => setShowGrid(e.target.checked)} /> Grid</label>
-        <label className="badge"><input type="checkbox" checked={gloss} onChange={e => setGloss(e.target.checked)} /> Gloss</label>
-        <label className="badge"><input type="checkbox" checked={showNumbers} onChange={e => setShowNumbers(e.target.checked)} /> #</label>
-        {/* Print options */}
-        <div style={{ fontWeight: 600, marginTop: 12 }}>Print Options</div>
-        <label className="badge"><input type="checkbox" checked={printOptions.showColors} onChange={e => setPrintOptions(opt => ({ ...opt, showColors: e.target.checked }))} /> Show Colors</label>
-        <label className="badge"><input type="checkbox" checked={printOptions.showNumbers} onChange={e => setPrintOptions(opt => ({ ...opt, showNumbers: e.target.checked }))} /> Show Numbers</label>
-        <label className="badge"><input type="checkbox" checked={printOptions.includeLegend} onChange={e => setPrintOptions(opt => ({ ...opt, includeLegend: e.target.checked }))} /> Legend</label>
-        <label className="badge"><input type="checkbox" checked={printOptions.includeTitle} onChange={e => setPrintOptions(opt => ({ ...opt, includeTitle: e.target.checked }))} /> Title</label>
-        {/* Key layout actions */}
-        <button className="btn" onClick={invertLayout}>Invert</button>
-        <button
-          className="btn"
-          onClick={() => {
-            setMap(prev => {
-              const next = { ...prev };
-              Object.keys(layout).forEach(id => {
-                // Skip blank/analog/split keys and group-locked keys
-                if (layout[id].blank || layout[id].analog || layout[id].split) return;
-                if (prev[id] && prev[id].group) return;
-                next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
-              });
-              // Randomize MU and MD if they are not grouped
-              if (!(prev['MU'] && prev['MU'].group)) {
-                next['MU'] = { ...(next['MU'] || {}), color: seededRandomColor('MU' + Date.now()) };
-              }
-              if (!(prev['MD'] && prev['MD'].group)) {
-                next['MD'] = { ...(next['MD'] || {}), color: seededRandomColor('MD' + Date.now()) };
-              }
-              return next;
-            });
-          }}
-        >
-          Randomize Colors
-        </button>
-        {/* Omit zoom controls on mobile; pinch‑to‑zoom provides this functionality */}
-        {!isMobile && (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="iconToggle" title="Zoom Out" onClick={() => setZoom(z => Math.max(0.4, +(z - 0.1).toFixed(2)))}><ZoomOutIcon /></button>
-            <button className="iconToggle" title="Zoom In"  onClick={() => setZoom(z => Math.min(2,   +(z + 0.1).toFixed(2)))}><ZoomInIcon /></button>
-          </div>
-        )}
-        <button
-          className="btn iconLabel"
-          onClick={() => {
-            const next = LAYOUTS[profile] || FALLBACK.positions;
-            setLayout({ ...next });
-            setMap(defaultKeymapForLayout(next));
-            setSelection([]); setShowPopover(false); setMenu(null);
-          }}
-        >
-          <ResetIcon size={16} />&nbsp;Reset Layout
-        </button>
-        {/* Import/export and sharing (removed per user request) */}
-        {/* Hidden file input removed */}
-        <button className="btn" onClick={() => setShowMobileSettings(false)}>Close</button>
-      </div>
-    );
-  };
-
   /* Export PNG — centered + printer-friendly */
   const saveImage = async () => {
     const c = canvasRef.current;
@@ -2267,34 +2200,49 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
       .emojiPanel::-webkit-scrollbar-thumb:hover{background:#6a50eb}
     `}</style>
   );
+  
+  const topBarProps = {
+    isMobile,
+    profile, setProfile,
+    locked, setLocked,
+    multi, setMulti,
+    snapGrid, setSnapGrid,
+    showGrid, setShowGrid,
+    gloss, setGloss,
+    showNumbers, setShowNumbers,
+    invertLayout,
+    randomizeColors,
+    gameTitle, setGameTitle,
+    layout,
+    map, setMap,
+    saveImage,
+    exportUI,
+    zoom, setZoom,
+    resetLayout,
+    printOptions, setPrintOptions,
+  };
 
   return (
     <div className="pageRoot">
       <header className="header">
-        {/* Settings button on the left for mobile */}
         {isMobile && (
           <button
             className="settingsButton"
             onClick={() => setShowMobileSettings(true)}
             aria-label="Settings"
-          onMouseDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <SettingsIcon size={20} />
           </button>
         )}
-        {/* Center brand within a flex wrapper */}
         <div className="brandWrap">
           <img src="/logo.png" alt="Unofficial Azeron Keymap Helper" className="brandLogo" />
         </div>
-        {/* Multi‑select and edit controls on mobile aligned to the right */}
         {isMobile && (
           <div className="mobileMultiControls">
             <button
               className={`iconToggle ${multi ? 'on' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setMulti((m) => !m);
-              }}
+              onClick={(e) => { e.stopPropagation(); setMulti((m) => !m); }}
               aria-pressed={multi}
               title="Toggle multi‑select"
               onMouseDown={(e) => e.stopPropagation()}
@@ -2320,325 +2268,41 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
                 <EditIcon />
               </button>
             )}
-        {/* Save button: toggles a small dropdown menu for saving images (print-friendly or colored UI). Always shown on mobile. */}
-        <div style={{ position: 'relative' }}>
-          <button
-            className={`iconToggle`}
-            title="Save images"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowMobileSaveMenu((v) => !v);
-            }}
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-          >
-            <SaveIcon />
-          </button>
-          {showMobileSaveMenu && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 6px)',
-                right: 0,
-                background: 'rgba(18,23,53,0.96)',
-                border: '1px solid rgba(255,255,255,.10)',
-                borderRadius: 12,
-                boxShadow: '0 12px 28px rgba(0,0,0,.45)',
-                padding: 8,
-                zIndex: 30,
-                minWidth: 200,
-              }}
-              onMouseLeave={!isMobile ? () => setShowMobileSaveMenu(false) : undefined}
-              onClick={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-            >
-              <button
-                className="btn"
-                style={{ width: '100%', marginBottom: 6 }}
-                onClick={async () => {
-                  setShowMobileSaveMenu(false);
-                  await saveImage();
-                }}
-              >
-                Save printer friendly PNG
-              </button>
-              <button
-                className="btn"
-                style={{ width: '100%' }}
-                onClick={async () => {
-                  setShowMobileSaveMenu(false);
-                  await exportUI();
-                }}
-              >
-                Save colored UI PNG
-              </button>
-            </div>
-          )}
-        </div>
           </div>
         )}
       </header>
 
-      {/* mobile settings overlay */}
-      {isMobile && showMobileSettings && (
+      {isMobile ? (
         <FullScreenSheet ref={settingsRef} open={showMobileSettings} onClose={() => setShowMobileSettings(false)}>
-          <MobileSettingsPanel />
+          <TopBarControls {...topBarProps} />
         </FullScreenSheet>
+      ) : (
+        <div className="topbar">
+          <TopBarControls {...topBarProps} />
+        </div>
       )}
 
-      {/* mobile edit overlay */}
       {isMobile && showMobileEdit && (
         <FullScreenSheet ref={editRef} open={showMobileEdit} onClose={() => setShowMobileEdit(false)}>
           <MobileEditContent />
         </FullScreenSheet>
       )}
 
-      {/* Mobile legend is rendered inside the panel below the header. It is handled
-         elsewhere in the layout to ensure it never overlaps the keys. See the
-         legendBar element in the canvas panel. */}
-      {/* Top controls (desktop only) */}
-      {!isMobile && (
-      <div className="topbar">
-        <div className="toolbarWrap">
-          {/* Bar 1 */}
-          <div className="rowWrap">
-            <DevicePicker value={profile} onChange={setProfile} />
-
-            <label className="badge"><input type="checkbox" checked={locked} onChange={e=>setLocked(e.target.checked)} /> Lock</label>
-            <label className="badge"><input type="checkbox" checked={multi} onChange={e=>setMulti(e.target.checked)} /> Multi</label>
-            <label className="badge"><input type="checkbox" checked={snapGrid} onChange={e=>setSnapGrid(e.target.checked)} /> Snap</label>
-            <label className="badge"><input type="checkbox" checked={showGrid} onChange={e=>setShowGrid(e.target.checked)} /> Grid</label>
-            <label className="badge"><input type="checkbox" checked={gloss} onChange={e=>setGloss(e.target.checked)} /> Gloss</label>
-            <label className="badge"><input type="checkbox" checked={showNumbers} onChange={e=>setShowNumbers(e.target.checked)} /> #</label>
-
-            <button className="btn" onClick={invertLayout}>Invert</button>
-            <button
-              className="btn"
-              title="Randomize colors"
-              onClick={() => {
-                setMap(prev => {
-                  const next = { ...prev };
-                  Object.keys(layout).forEach(id => {
-                    // Skip blank/analog/split keys and group-locked keys
-                    if (layout[id].blank || layout[id].analog || layout[id].split) return;
-                    if (prev[id] && prev[id].group) return;
-                    next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
-                  });
-                  // Randomize MU and MD if they are not grouped
-                  if (!(prev["MU"] && prev["MU"].group)) {
-                    next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
-                  }
-                  if (!(prev["MD"] && prev["MD"].group)) {
-                    next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
-                  }
-                  return next;
-                });
-              }}
-            >
-              🎲
-            </button>
-          </div>
-
-          {/* Bar 2 */}
-          <div className="rowWrap centerWrap">
-            <input
-              className="input titleInput titleInputXL"
-              placeholder="Title of your game"
-              value={gameTitle}
-              onChange={e=>setGameTitle(e.target.value)}
-              style={{ maxWidth:620, minWidth:260 }}
-            />
-
-            {/* THEME / SAVE / LOAD */}
-            <div className="compactMenuWrap">
-              <button
-                className="iconToggle"
-                title="Theme & file actions"
-                onClick={(e)=>{
-                  const menu = e.currentTarget.nextSibling;
-                  menu.classList.toggle("open");
-                }}
-              >
-                <ThemeIcon />
-              </button>
-              <div
-                className="compactMenu"
-                onMouseLeave={(e)=>e.currentTarget.classList.remove("open")}
-              >
-                <div className="row">
-                  <select
-                    className="select"
-                    defaultValue="__none__"
-                    aria-label="Apply preset theme"
-                    onChange={e=>{
-                      const id = e.target.value;
-                      if (id === "__none__") return;
-                      setMap(prev => applyTheme(prev, layout, id));
-                    }}
-                  >
-                    <option value="__none__">Apply preset theme…</option>
-                    {(() => {
-                      const byCat = THEMES.reduce((acc, t) => {
-                        const k = t.cat || "Other";
-                        (acc[k] ||= []).push(t);
-                        return acc;
-                      }, {});
-                      Object.values(byCat).forEach(arr =>
-                        arr.sort((a,b) => a.name.localeCompare(b.name))
-                      );
-                      const order = ["Core", "Controllers", "Games", "Color Vision", "Other"];
-                      const orderedCats = [
-                        ...order.filter(k => byCat[k]),
-                        ...Object.keys(byCat).filter(k => !order.includes(k)),
-                      ];
-                      return orderedCats.map(cat => (
-                        <optgroup key={cat} label={cat}>
-                          {byCat[cat].map(t => (
-                            <option key={t.id} value={t.id}>{t.name}</option>
-                          ))}
-                        </optgroup>
-                      ));
-                    })()}
-                  </select>
-                </div>
-
-                <div className="row">
-                  <button
-                    className="btn"
-                    onClick={()=>{
-                      const payload = { version: 14, profile, layout, map, gameTitle, gloss, showNumbers };
-                      const a = document.createElement("a");
-                      a.href = URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)], { type:"application/json" }));
-                      a.download = `azeron_${profile}_theme.json`;
-                      a.click(); URL.revokeObjectURL(a.href);
-                    }}
-                  >
-                    <SaveIcon />&nbsp; Save Theme JSON
-                  </button>
-                </div>
-
-                <div className="row">
-                  <button
-                    className="btn"
-                    onClick={()=>{
-                      const inp = document.createElement("input");
-                      inp.type="file"; inp.accept="application/json,.json";
-                      inp.onchange = async (e)=>{
-                        const f=e.target.files?.[0]; if(!f) return;
-                        try{
-                          const data = JSON.parse(await f.text());
-                          const next = data.layout ? (data.layout.positions || data.layout) : (LAYOUTS[data.profile||profile] || LAYOUTS[profile]);
-                          if(data.profile) setProfile(data.profile);
-                          if(next) setLayout({ ...next });
-                          if(data.map) setMap(data.map);
-                          if(data.gameTitle!=null) setGameTitle(data.gameTitle);
-                          if(data.gloss!=null) setGloss(!!data.gloss);
-                          if(data.showNumbers!=null) setShowNumbers(!!data.showNumbers);
-                        }catch{ alert("Failed to load theme"); }
-                      };
-                      inp.click();
-                    }}
-                  >
-                    <FolderIcon />&nbsp; Load Theme JSON
-                  </button>
-                </div>
-                {/* Profile management removed in theme menu per user request */}
-
-                {/* Print options removed in theme menu to avoid duplication */}
-
-                {/* Export/import/share removed per user request */}
-
-                <div className="row">
-                  <button className="btn" onClick={(e)=>e.currentTarget.closest(".compactMenu").classList.remove("open")}> 
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Save images */}
-            <div style={{ position: "relative" }}>
-              <button
-                className="btn primary"
-                title="Save"
-                onClick={(e) => {
-                  const m = e.currentTarget.nextSibling;
-                  m.style.display = m.style.display === "block" ? "none" : "block";
-                }}
-                style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#0b1f6f", borderColor:"rgba(255,255,255,.14)" }}
-              >
-                Save <span style={{ marginLeft: 8 }}>▾</span>
-              </button>
-              <div
-                style={{
-                  position:"absolute",
-                  top:"calc(100% + 6px)",
-                  right:0,
-                  display:"none",
-                  background:"rgba(18,23,53,0.96)",
-                  border:"1px solid rgba(255,255,255,.10)",
-                  borderRadius:12,
-                  boxShadow:"0 12px 28px rgba(0,0,0,.45)",
-                  padding:8,
-                  zIndex:10,
-                  minWidth:220
-                }}
-                onMouseLeave={(e)=>{ e.currentTarget.style.display="none"; }}
-              >
-                <button className="btn" style={{ width:"100%", marginBottom:6 }} onClick={saveImage}>
-                  Save printer friendly PNG
-                </button>
-                <button className="btn" style={{ width:"100%" }} onClick={exportUI}>
-                  Save colored UI PNG
-                </button>
-              </div>
-            </div>
-
-            {/* Zoom + Reset */}
-            <button className="iconToggle" title="Zoom Out" onClick={()=>setZoom(z=>Math.max(0.4, +(z-0.1).toFixed(2)))}><ZoomOutIcon /></button>
-            <button className="iconToggle" title="Zoom In"  onClick={()=>setZoom(z=>Math.min(2,   +(z+0.1).toFixed(2)))}><ZoomInIcon /></button>
-
-            <button
-              className="btn iconLabel"
-              onClick={()=>{
-                const next = LAYOUTS[profile] || FALLBACK.positions;
-                setLayout({ ...next });
-                setMap(defaultKeymapForLayout(next));
-                setSelection([]); setShowPopover(false); setMenu(null);
-              }}
-            >
-              <ResetIcon size={16} />
-              <span>Reset Layout</span>
-            </button>
-          </div>
-
-        </div>
-      </div>
-      )}
-
       {/* Mapper */}
       <div className="canvasWrap" ref={containerRef}>
-        <div
-          className="panel"
-          style={{ position:"relative" }}
-        >
-          {/* Mobile legend bar: when groups are defined on mobile, show a horizontal legend
-              banner across the top of the stage area. This sits below the header and
-              above the map so it never overlaps keys. */}
+        <div className="panel" style={{ position:"relative" }}>
           {groupLegend.length > 0 && (
             <div className="legendBar">
-              <div className="legendTitle" style={{ marginRight: 8 }}>Groups</div>
-              <div className="legendRow">
-                {groupLegend.map(([g, cols]) => {
-                  const color = cols.length ? cols[0] : '#888';
-                  return (
-                    <div key={g} className="legendItem">
-                      <div className="legendDot" style={{ background: color }} />
-                      <div className="legendText">{g}</div>
-                    </div>
-                  );
-                })}
-              </div>
+              <div className="legendTitle">Groups</div>
+              {groupLegend.map(([g, cols]) => {
+                const color = cols.length ? cols[0] : '#888';
+                return (
+                  <div key={g} className="legendItem">
+                    <div className="legendDot" style={{ background: color }} />
+                    <div className="legendText">{g}</div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
