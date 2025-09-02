@@ -1448,8 +1448,26 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
             }}
             onMouseLeave={(e)=>{ e.currentTarget.style.display="none"; }}
           >
-            <button className="btn" style={{ width:"100%", marginBottom:6 }} onClick={saveImage}>Save printer friendly PNG</button>
-            <button className="btn" style={{ width:"100%" }} onClick={exportUI}>Save colored UI PNG</button>
+            <button
+  className="btn"
+  style={{ width: '100%', marginBottom: 6 }}
+  onClick={async () => {
+    await saveImage();
+    setShowMobileSaveMenu(false); // Now closes after saving
+  }}
+>
+  Save printer friendly PNG
+</button>
+<button
+  className="btn"
+  style={{ width: '100%' }}
+  onClick={async () => {
+    await exportUI();
+    setShowMobileSaveMenu(false); // Now closes after saving
+  }}
+>
+  Save colored UI PNG
+</button>
           </div>
         </div>
 
