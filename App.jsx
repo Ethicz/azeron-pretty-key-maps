@@ -688,8 +688,13 @@ function DevicePicker({ value, onChange }) {
    const FullScreenSheet = React.forwardRef(function FullScreenSheet({ open, onClose, children }, ref) {
      if (!open) return null;
      return createPortal(
-       <div className="fullSheet" onClick={onClose}>
-         <div ref={ref} className="fullSheetBody" onClick={(e) => e.stopPropagation()}>
+       <div className="fullSheet" onClick={onClose} onTouchStart={onClose}>
+         <div
+           ref={ref}
+           className="fullSheetBody"
+           onClick={(e) => e.stopPropagation()}
+           onTouchStart={(e) => e.stopPropagation()}
+         >
            {children}
          </div>
        </div>,
@@ -772,6 +777,9 @@ export default function App(){
   // the corresponding full‑screen overlay is rendered.
   const [showMobileSettings, setShowMobileSettings] = useState(false);
   const [showMobileEdit,     setShowMobileEdit]     = useState(false);
+
+  // Mobile save menu visibility. Controls the dropdown menu for save options on mobile.
+  const [showMobileSaveMenu, setShowMobileSaveMenu] = useState(false);
 
   // Print options for PNG export. Controls whether colors and numbers are printed and whether
   // a group legend or title is included. These options are adjustable by the user in settings.
@@ -1047,10 +1055,11 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
       // ignore clicks on the stage so selection clears via stage handlers
       const stage = document.getElementById("stage-root");
       if (stage?.contains(e.target)) return;
-      // clear selection and close popovers/menus
+      // clear selection and close popovers/menus and mobile save dropdown
       setSelection([]);
       setShowPopover(false);
       setMenu(null);
+      setShowMobileSaveMenu(false);
     };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("touchstart", onDown, { passive: true });
@@ -1496,6 +1505,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
           padding: 16,
         }}
         onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
       >
         <div
           style={{
@@ -2255,6 +2265,59 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
                 <EditIcon />
               </button>
             )}
+        {/* Save button: toggles a small dropdown menu for saving images (print-friendly or colored UI). Always shown on mobile. */}
+        <div style={{ position: 'relative' }}>
+          <button
+            className={`iconToggle`}
+            title="Save images"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMobileSaveMenu((v) => !v);
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+          >
+            <SaveIcon />
+          </button>
+          {showMobileSaveMenu && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                right: 0,
+                background: 'rgba(18,23,53,0.96)',
+                border: '1px solid rgba(255,255,255,.10)',
+                borderRadius: 12,
+                boxShadow: '0 12px 28px rgba(0,0,0,.45)',
+                padding: 8,
+                zIndex: 30,
+                minWidth: 200,
+              }}
+              onMouseLeave={() => setShowMobileSaveMenu(false)}
+            >
+              <button
+                className="btn"
+                style={{ width: '100%', marginBottom: 6 }}
+                onClick={async () => {
+                  setShowMobileSaveMenu(false);
+                  await saveImage();
+                }}
+              >
+                Save printer friendly PNG
+              </button>
+              <button
+                className="btn"
+                style={{ width: '100%' }}
+                onClick={async () => {
+                  setShowMobileSaveMenu(false);
+                  await exportUI();
+                }}
+              >
+                Save colored UI PNG
+              </button>
+            </div>
+          )}
+        </div>
           </div>
         )}
       </header>
@@ -2273,6 +2336,33 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
         </FullScreenSheet>
       )}
 
+      {/* Mobile legend: show group legend above the stage when on mobile to avoid covering keys */}
+      {isMobile && groupLegend.length > 0 && (
+        <div style={{ textAlign: 'center', marginTop: 8 }}>
+          <div
+            className="legendUI"
+            style={{
+              position: 'relative',
+              left: 'auto',
+              right: 'auto',
+              top: 'auto',
+              bottom: 'auto',
+              display: 'inline-block',
+            }}
+          >
+            <div className="legendTitle">Groups</div>
+            {groupLegend.map(([g, cols]) => {
+              const color = cols.length ? cols[0] : '#888';
+              return (
+                <div key={g} className="legendItem" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginRight: 8 }}>
+                  <div className="legendDot" style={{ background: color }} />
+                  <div className="legendText">{g}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {/* Top controls (desktop only) */}
       {!isMobile && (
       <div className="topbar">
@@ -2820,21 +2910,24 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
 
     <canvas ref={canvasRef} style={{ display:"none" }} />
 
-    {/* Group legend overlay — rendered into the stageBox via portal. Only show if there are groups assigned */}
-    {groupLegend.length > 0 && stageBoxRef.current && createPortal(
-      <div className="legendUI" style={{ left: 'auto', right: 12, top: 'auto', bottom: 12 }}>
-        <div className="legendTitle">Groups</div>
-        {groupLegend.map(([g, cols]) => {
-          const color = cols.length ? cols[0] : '#888';
-          return (
-            <div key={g} className="legendItem">
-              <div className="legendDot" style={{ background: color }} />
-              <div className="legendText">{g}</div>
-            </div>
-          );
-        })}
-      </div>,
-      stageBoxRef.current
+    {/* Group legend overlay */}
+    {groupLegend.length > 0 && (
+      isMobile
+        ? null /* mobile legend will render above the stage */
+        : (stageBoxRef.current && createPortal(
+            <div className="legendUI" style={{ left: 'auto', right: 12, top: 'auto', bottom: 12 }}>
+              <div className="legendTitle">Groups</div>
+              {groupLegend.map(([g, cols]) => {
+                const color = cols.length ? cols[0] : '#888';
+                return (
+                  <div key={g} className="legendItem">
+                    <div className="legendDot" style={{ background: color }} />
+                    <div className="legendText">{g}</div>
+                  </div>
+                );
+              })}
+            </div>, stageBoxRef.current)
+          )
     )}
   </div>
 </div>
