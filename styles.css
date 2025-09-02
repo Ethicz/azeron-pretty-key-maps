@@ -173,6 +173,38 @@ body{
 .legendDot{ width:12px; height:12px; border-radius:50%; border:1px solid rgba(0,0,0,.25); }
 .legendText{ font-weight:600; font-size:13px; opacity:.95; }
 
+/* Legend bar for mobile: spans full width of the stage area and lays out
+   group items horizontally. Appears below the header to avoid overlapping
+   the key tiles. */
+.legendBar{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 6px 8px;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  /* subtle background to separate from stage grid */
+  background: rgba(20, 22, 42, 0.5);
+  border: 1px solid rgba(240,240,255,.22);
+  backdrop-filter: blur(4px);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+}
+.legendRow{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.legendBar .legendItem{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
 /* Tiles */
 .key, .blank, .splitTile{ position:absolute; width:120px; height:140px; border-radius:18px; z-index:1; }
 .blank{ border:2px dashed rgba(240,240,255,.18); }

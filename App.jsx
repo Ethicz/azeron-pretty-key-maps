@@ -686,13 +686,22 @@ function DevicePicker({ value, onChange }) {
    // CSS class to occupy the entire viewport and hides scrollbars. The ref is forwarded to the
    // inner panel to support click‑away detection.
    const FullScreenSheet = React.forwardRef(function FullScreenSheet({ open, onClose, children }, ref) {
+     // A full‑screen modal used on mobile for settings and key editing. The overlay is rendered
+     // via a portal to the document body. We intentionally avoid closing the sheet on
+     // touchstart because some mobile keyboards will emit synthetic touch events that
+     // inadvertently close the panel. Instead, outside clicks are handled by the
+     // global handleOutside effect below. The root div retains an onClick handler
+     // so that mouse clicks outside the panel still close the sheet.
      if (!open) return null;
      return createPortal(
-       <div className="fullSheet" onClick={onClose} onTouchStart={onClose}>
+       <div className="fullSheet" onClick={onClose}>
          <div
            ref={ref}
            className="fullSheetBody"
+           // Stop all click and touch events from bubbling up to the overlay. This keeps
+           // the overlay open while interacting with form fields on mobile.
            onClick={(e) => e.stopPropagation()}
+           onMouseDown={(e) => e.stopPropagation()}
            onTouchStart={(e) => e.stopPropagation()}
          >
            {children}
@@ -2091,10 +2100,14 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     fctx.drawImage(c, offsetX2, offsetY2, origW, origH);
     // Convert final canvas to PNG and trigger download
     const url = finalCanvas.toDataURL('image/png');
+    // For mobile Safari/Chrome the download may not trigger unless the element is part of the DOM.
     const a = document.createElement('a');
     a.download = `azeron_${profile}_print.png`;
     a.href = url;
+    // Append to body to ensure click works on mobile
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
   };
 
   // glossy UI DOM snapshot
@@ -2126,10 +2139,13 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
         style: { transform: "none" }
       });
 
+      // On mobile we need to append the anchor to the DOM for download to work
       const a = document.createElement("a");
       a.download = `azeron_${profile}_ui.png`;
       a.href = dataUrl;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
     } catch (err) {
       console.error(err);
       alert("UI export failed. Ensure images are same-origin or data URLs.");
@@ -2336,33 +2352,9 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
         </FullScreenSheet>
       )}
 
-      {/* Mobile legend: show group legend above the stage when on mobile to avoid covering keys */}
-      {isMobile && groupLegend.length > 0 && (
-        <div style={{ textAlign: 'center', marginTop: 8 }}>
-          <div
-            className="legendUI"
-            style={{
-              position: 'relative',
-              left: 'auto',
-              right: 'auto',
-              top: 'auto',
-              bottom: 'auto',
-              display: 'inline-block',
-            }}
-          >
-            <div className="legendTitle">Groups</div>
-            {groupLegend.map(([g, cols]) => {
-              const color = cols.length ? cols[0] : '#888';
-              return (
-                <div key={g} className="legendItem" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginRight: 8 }}>
-                  <div className="legendDot" style={{ background: color }} />
-                  <div className="legendText">{g}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Mobile legend is rendered inside the panel below the header. It is handled
+         elsewhere in the layout to ensure it never overlaps the keys. See the
+         legendBar element in the canvas panel. */}
       {/* Top controls (desktop only) */}
       {!isMobile && (
       <div className="topbar">
@@ -2589,6 +2581,26 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
           className="panel"
           style={{ position:"relative" }}
         >
+          {/* Mobile legend bar: when groups are defined on mobile, show a horizontal legend
+              banner across the top of the stage area. This sits below the header and
+              above the map so it never overlaps keys. */}
+          {isMobile && groupLegend.length > 0 && (
+            <div className="legendBar">
+              <div className="legendTitle" style={{ marginRight: 8 }}>Groups</div>
+              <div className="legendRow">
+                {groupLegend.map(([g, cols]) => {
+                  const color = cols.length ? cols[0] : '#888';
+                  return (
+                    <div key={g} className="legendItem">
+                      <div className="legendDot" style={{ background: color }} />
+                      <div className="legendText">{g}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Grid */}
           {showGrid && (
             <div
