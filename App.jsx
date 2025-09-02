@@ -533,7 +533,17 @@ function drawAnalogMonoline(ctx, x, y){
   ctx.beginPath(); ctx.moveTo(cx,cy-outer); ctx.lineTo(cx,cy+outer); ctx.stroke();
   ctx.beginPath(); ctx.arc(cx,cy,inner,0,Math.PI*2); ctx.stroke();
 }
-function loadImage(url){ return new Promise((res, rej)=>{ const img = new Image(); img.onload=()=>res(img); img.onerror=rej; img.src=url; }); }
+
+// ✅ Updated loadImage to handle CORS issues
+function loadImage(url) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.crossOrigin = "Anonymous"; // This is the fix for the canvas tainting issue
+    img.onload = () => res(img);
+    img.onerror = rej;
+    img.src = url;
+  });
+}
 
 /* =========================
    SplitWheel and Analog
@@ -699,6 +709,7 @@ function TopBarControls({
   resetLayout,
   printOptions,
   setPrintOptions,
+  onClose, // ✅ New prop for closing the mobile panel
 }) {
   return (
     <div className="toolbarWrap">
@@ -860,6 +871,13 @@ function TopBarControls({
           <input type="checkbox" checked={printOptions.showNumbers} onChange={(e) => setPrintOptions(opt => ({ ...opt, showNumbers: e.target.checked }))} /> Numbers
         </label>
       </div>
+
+      {/* ✅ Add the close button for mobile */}
+      {isMobile && (
+        <button className="btn" onClick={onClose} style={{ marginTop: '16px', width: '100%' }}>
+          Close
+        </button>
+      )}
     </div>
   );
 }
@@ -954,6 +972,7 @@ export default function App(){
 
   const [menu, setMenu] = useState(null);
   const canvasRef = useRef(null);
+  const panelRef = useRef(null); // ✅ Ref for the panel element
   
   // ✅ New state for the image preview modal
   const [previewImageUrl, setPreviewImageUrl] = useState(null);
@@ -1910,37 +1929,167 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     );
   };
 
-  // ✅ Updated function to open the preview modal instead of force-downloading
   const saveImage = async () => {
     const c = canvasRef.current;
     if (!c) return;
+    try {
+      const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+      c.width = CANVAS_W * dpr;
+      c.height = CANVAS_H * dpr;
+      const ctx = c.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // The rest of the canvas drawing logic is complex and correct.
-    // The key change is what we do with the final image data.
-    // We will generate the image on the canvas as before...
-    
-    // ... (all the ctx drawing logic from your original file) ...
-    
-    // After all drawing is complete, instead of creating an <a> tag:
-    const url = c.toDataURL('image/png');
-    setPreviewImageUrl(url);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      if (printOptions?.includeTitle) {
+        const headerH = 72;
+        const footerH = 40;
+        const grdH = ctx.createLinearGradient(0, 0, 0, headerH);
+        grdH.addColorStop(0, '#1a1a33');
+        grdH.addColorStop(1, '#0e0e21');
+        ctx.fillStyle = grdH;
+        ctx.fillRect(0, 0, CANVAS_W, headerH);
+
+        const game = gameTitle?.trim() || '';
+        const deviceName = profile ? (profile[0].toUpperCase() + profile.slice(1)) : '';
+        ctx.fillStyle = '#f2f2f2';
+        ctx.font = '700 30px Montserrat, ui-sans-serif';
+        const gt = game || (deviceName ? `${deviceName} Layout` : '');
+        if (gt) ctx.fillText(gt, 20, 40);
+
+        const grdF = ctx.createLinearGradient(0, CANVAS_H - footerH, 0, CANVAS_H);
+        grdF.addColorStop(0, '#0e0e21');
+        grdF.addColorStop(1, '#1a1a33');
+        ctx.fillStyle = grdF;
+        ctx.fillRect(0, CANVAS_H - footerH, CANVAS_W, footerH);
+      }
+      
+      const withImages = Object.entries(layout)
+        .filter(([, p]) => !p.analog && !p.split && !p.blank)
+        .map(([id]) => ({ id, data: map[id] }));
+      for (const { data } of withImages) {
+        if (data?.image) {
+          try { data.__img = await loadImage(data.image); } catch (e) {
+              console.error("Could not load image for print:", data.image, e);
+          }
+        }
+      }
+
+      let minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
+      Object.values(layout).forEach((pos) => {
+        const w = pos.analog ? KEY_W * 2 + GAP_X : KEY_W;
+        const h = KEY_H;
+        minX = Math.min(minX, pos.x);
+        minY = Math.min(minY, pos.y);
+        maxX = Math.max(maxX, pos.x + w);
+        maxY = Math.max(maxY, pos.y + h);
+      });
+      const layoutWidth = maxX - minX;
+      const layoutHeight = maxY - minY;
+      
+      const legendWidth = 220;
+      const mainAreaWidth = CANVAS_W - legendWidth;
+      const offsetX = (mainAreaWidth - layoutWidth) / 2 - minX;
+
+      let offsetY;
+      if (printOptions?.includeTitle) {
+        const headerH = 72;
+        const footerH = 40;
+        const availH = CANVAS_H - headerH - footerH;
+        offsetY = headerH + (availH - layoutHeight) / 2 - minY;
+      } else {
+        const legacyTop = 40;
+        offsetY = (CANVAS_H - layoutHeight) / 2 - minY + legacyTop;
+      }
+
+      const colorOverride = printOptions?.showColors ? null : '#cccccc';
+      Object.entries(layout).forEach(([id, pos]) => {
+        if (pos.blank) return;
+        if (pos.split) {
+          const up = map["MU"] || { label: "Mouse Up", color: BASE.teal };
+          const down = map["MD"] || { label: "Mouse Down", color: BASE.indigo };
+          drawSplit(ctx, pos.x + offsetX, pos.y + offsetY, KEY_W, KEY_H,
+            colorOverride ? { ...up, color: colorOverride } : up,
+            colorOverride ? { ...down, color: colorOverride } : down
+          );
+          return;
+        }
+        if (pos.analog) return;
+        const keyData = map[id] || {};
+        const overrideData = colorOverride ? { ...keyData, color: colorOverride } : keyData;
+        drawKey(ctx, pos.x + offsetX, pos.y + offsetY, KEY_W, KEY_H, overrideData);
+      });
+
+      const ap = layout["ANALOG"];
+      if (ap) drawAnalogMonoline(ctx, ap.x + offsetX, ap.y + offsetY);
+
+      if (printOptions?.includeLegend) {
+        const groups = {};
+        Object.entries(map).forEach(([id, data]) => {
+          if (data && data.group) {
+            if (!groups[data.group]) groups[data.group] = [];
+            if (data.color) groups[data.group].push(data.color);
+          }
+        });
+        const entries = Object.entries(groups);
+        if (entries.length) {
+          const headerH = 72;
+          let y = 20;
+          const x0 = CANVAS_W - legendWidth + 20;
+
+          ctx.fillStyle = '#f2f2f2';
+          ctx.font = '700 16px Montserrat, ui-sans-serif';
+          ctx.fillText("Groups", x0, y);
+          y += 24;
+
+          entries.forEach(([g, cols]) => {
+            if (y > headerH - 10) return;
+            const col = cols.length ? cols[0] : '#888';
+            ctx.fillStyle = col;
+            ctx.fillRect(x0, y, 18, 12);
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 0.5;
+            ctx.strokeRect(x0, y, 18, 12);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '600 14px Montserrat, ui-sans-serif';
+            ctx.fillText(g, x0 + 24, y + 11);
+            y += 20;
+          });
+        }
+      }
+      
+      if (printOptions?.includeTitle) {
+        const printDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const footerText = `Generated on ${printDate}`;
+        ctx.fillStyle = '#f2f2f2';
+        ctx.font = '600 14px Montserrat, ui-sans-serif';
+        const fw = ctx.measureText(footerText).width;
+        ctx.fillText(footerText, CANVAS_W - fw - 20, CANVAS_H - 20);
+      }
+      
+      const url = c.toDataURL('image/png');
+      setPreviewImageUrl(url);
+    } catch (err) {
+      console.error("Failed to generate printer-friendly image:", err);
+      alert("Could not generate the image. This can happen if you use an icon from a website that blocks sharing. Try removing recently added image icons.");
+    }
   };
 
-  // ✅ Updated function to open the preview modal
   const exportUI = async () => {
-    const stage = stageDomRef.current;
-    if (!stage) return;
-    
-    // ... (setup logic for htmlToImage is the same) ...
+    const targetEl = panelRef.current; // ✅ Change target to the panel
+    if (!targetEl) return;
 
     try {
-      const dataUrl = await htmlToImage.toPng(stage, { /* options */ });
-      setPreviewImageUrl(dataUrl); // ✅ The only change is here
+      const dataUrl = await htmlToImage.toPng(targetEl, {
+        backgroundColor: "#0b0f1d",
+        pixelRatio: Math.max(2, Math.floor(window.devicePixelRatio || 1)),
+        cacheBust: true,
+      });
+      setPreviewImageUrl(dataUrl);
     } catch (err) {
       console.error(err);
       alert("UI export failed. Ensure images are same-origin or data URLs.");
-    } finally {
-      // ... (cleanup logic is the same) ...
     }
   };
 
@@ -2033,6 +2182,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     zoom, setZoom,
     resetLayout,
     printOptions, setPrintOptions,
+    onClose: () => setShowMobileSettings(false), // ✅ Pass the close handler
   };
 
   return (
@@ -2106,7 +2256,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
 
       {/* Mapper */}
       <div className="canvasWrap" ref={containerRef}>
-        <div className="panel" style={{ position:"relative" }}>
+        <div className="panel" ref={panelRef} style={{ position:"relative" }}>
           {groupLegend.length > 0 && (
             <div className="legendBar">
               <div className="legendTitle">Groups</div>
