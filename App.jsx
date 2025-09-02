@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import EmojiPicker from "emoji-picker-react";
 import * as htmlToImage from "html-to-image";
@@ -36,19 +36,8 @@ const LockIcon = ({size=18, on=false})=>(
     {on ? <circle cx="12" cy="15" r="2" fill="#79a1ff"/> : null}
   </svg>
 );
-const MultiIcon   = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
-    <rect x="3" y="6" width="14" height="12" rx="2" stroke="#fff" strokeWidth="2" opacity=".9" />
-    <rect x="7" y="4" width="14" height="12" rx="2" stroke="#fff" strokeWidth="2" opacity=".5" />
-  </svg>
-);
-
-// A simple edit (pencil) icon for multi‑edit mode on mobile
-const EditIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
-    <path d="M3 17.25v3.75h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="#fff" />
-    <path d="M14.44 5.34l3.75 3.75 2.13-2.13a1 1 0 0 0 0-1.41L18.1 3.33a1 1 0 0 0-1.41 0l-2.25 2.01z" fill="#fff" />
-  </svg>
+const MultiIcon   = ({size=18})=>(
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="14" height="12" rx="2" stroke="#fff" strokeWidth="2" opacity=".9"/><rect x="7" y="4" width="14" height="12" rx="2" stroke="#fff" strokeWidth="2" opacity=".5"/></svg>
 );
 const SnapIcon    = ({size=18})=>(
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M3 8h6M3 16h6M15 8h6M15 16h6" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity=".9"/><circle cx="12" cy="12" r="2" fill="#79a1ff"/></svg>
@@ -83,21 +72,6 @@ const ThemeIcon = ({ size = 18, color = "currentColor" }) => (
 );
 const FolderIcon  = ({size=18})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M3 7h6l2 2h10v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="#fff" strokeWidth="2"/></svg>);
 const PasteIcon   = ({size=18})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="7" y="5" width="10" height="14" rx="2" stroke="#fff" strokeWidth="2"/><path d="M9 3h6v2H9z" fill="#fff"/></svg>);
-
-/* Settings gear icon for mobile */
-const SettingsIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
-    <path d="M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z" stroke="#fff" strokeWidth="2" />
-    <path d="M12 3v2" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-    <path d="M12 19v2" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-    <path d="M3 12h2" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-    <path d="M19 12h2" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-    <path d="M5.64 5.64l1.41 1.41" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-    <path d="M16.95 16.95l1.41 1.41" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-    <path d="M5.64 18.36l1.41-1.41" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-    <path d="M16.95 7.05l1.41-1.41" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-  </svg>
-);
 
 /* Reusable toggle button (icon-only) */
 function IconToggle({on, title, onClick, children}) {
@@ -203,24 +177,14 @@ const THEMES = [
 /* =========================
    Helpers
    ========================= */
-function useLongPress(onLongPress, onClick, { delay = 600 } = {}) {
-  // Track whether the long press callback has fired to avoid invoking onClick afterwards
+   function useLongPress(onLongPress, onClick, { delay = 600 } = {}) {
   const timeout = React.useRef();
-  const longPressFired = React.useRef(false);
   const start = (e) => {
-    // Reset flag when a new press starts
-    longPressFired.current = false;
-    timeout.current = setTimeout(() => {
-      longPressFired.current = true;
-      onLongPress(e);
-    }, delay);
+    timeout.current = setTimeout(() => onLongPress(e), delay);
   };
   const clear = (e, triggerClick = true) => {
     clearTimeout(timeout.current);
-    // Only call onClick if the long press did not fire and triggerClick is true
-    if (!longPressFired.current && triggerClick) onClick(e);
-    // Reset the flag after handling
-    longPressFired.current = false;
+    if (triggerClick) onClick(e);
   };
   return {
     onPointerDown: start,
@@ -272,6 +236,25 @@ function textPair(bgHex) {
   const label = bestTextOn(bgHex);
   const sub   = label === "#FFFFFF" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.72)";
   return { label, sub };
+}
+
+// Helper for triggering downloads on mobile/desktop
+// Creates a temporary link, attaches it to the DOM, triggers a click,
+// then cleans up and revokes the URL when done. Using a blob rather
+// than a data URL ensures downloads work consistently across mobile
+// browsers (iOS Safari, Android Chrome, etc.).
+function downloadBlob(blob, filename) {
+  if (!blob) return;
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.style.display = "none";
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  // Release the object URL on the next tick to allow the download to start
+  setTimeout(() => URL.revokeObjectURL(url), 250);
 }
 
 
@@ -412,36 +395,12 @@ function defaultKeymapForLayout(layout){
   ids.forEach((id)=>{
     const label = VG_LABELS[li % VG_LABELS.length];
     li++;
-    map[id] = { label, sub: "", color: seededRandomColor(id), emoji: "", image: null, imageMode:"icon", group: "" };
+    map[id] = { label, sub: "", color: seededRandomColor(id), emoji: "", image: null, imageMode:"icon" };
   });
-  map["MU"] = { label: "Mouse Up", color: BASE.teal, group: "" };
-  map["MD"] = { label: "Mouse Down", color: BASE.indigo, group: "" };
+  map["MU"] = { label: "Mouse Up", color: BASE.teal };
+  map["MD"] = { label: "Mouse Down", color: BASE.indigo };
   return map;
 }
-
-/* =========================
-   Official profile import helpers
-   ========================= */
-// Map XInput button bitmasks to human‑readable names. These values are based on
-// the XINPUT_GAMEPAD_* constants defined by Microsoft. Only common buttons are
-// mapped here; any unmapped value falls back to a numeric label.
-const XINPUT_BUTTON_NAMES = {
-  0x1000: 'Y',
-  0x2000: 'X',
-  0x4000: 'B',
-  0x8000: 'A',
-  0x0100: 'LB',
-  0x0200: 'RB',
-  0x0001: 'DPad Up',
-  0x0002: 'DPad Down',
-  0x0004: 'DPad Left',
-  0x0008: 'DPad Right',
-  0x0010: 'Start',
-  0x0020: 'Back',
-  0x0040: 'LThumb',
-  0x0080: 'RThumb',
-};
-
 
 /* =========================
    Canvas helpers (PNG)
@@ -669,47 +628,17 @@ function DevicePicker({ value, onChange }) {
 /* =========================
    Main App
    ========================= */
-   // BottomSheet uses React.forwardRef so we can attach a ref to the root element for click‑away detection
-   const BottomSheet = React.forwardRef(function BottomSheet({ open, onClose, children }, ref) {
-     return createPortal(
-       <div ref={ref} className={`sheet ${open ? "open" : ""}`} onClick={onClose}>
-         <div className="sheetBody" onClick={(e) => e.stopPropagation()}>
-           <div className="handle" />
-           {children}
-         </div>
-       </div>,
-       document.body
-     );
-   });
-
-   // FullScreenSheet renders a full‑screen overlay for mobile editing and settings. It uses a separate
-   // CSS class to occupy the entire viewport and hides scrollbars. The ref is forwarded to the
-   // inner panel to support click‑away detection.
-   const FullScreenSheet = React.forwardRef(function FullScreenSheet({ open, onClose, children }, ref) {
-     // A full‑screen modal used on mobile for settings and key editing. The overlay is rendered
-     // via a portal to the document body. We intentionally avoid closing the sheet on
-     // touchstart because some mobile keyboards will emit synthetic touch events that
-     // inadvertently close the panel. Instead, outside clicks are handled by the
-     // global handleOutside effect below. The root div retains an onClick handler
-     // so that mouse clicks outside the panel still close the sheet.
-     if (!open) return null;
-     return createPortal(
-       <div className="fullSheet" onClick={onClose}>
-         <div
-           ref={ref}
-           className="fullSheetBody"
-           // Stop all click and touch events from bubbling up to the overlay. This keeps
-           // the overlay open while interacting with form fields on mobile.
-           onClick={(e) => e.stopPropagation()}
-           onMouseDown={(e) => e.stopPropagation()}
-           onTouchStart={(e) => e.stopPropagation()}
-         >
-           {children}
-         </div>
-       </div>,
-       document.body
-     );
-   });
+   function BottomSheet({ open, onClose, children }) {
+  return createPortal(
+    <div className={`sheet ${open ? "open" : ""}`} onClick={onClose}>
+      <div className="sheetBody" onClick={(e) => e.stopPropagation()}>
+        <div className="handle" />
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
 export default function App(){
   const [profile, setProfile] = useState("cyro");
   const [layout, setLayout]  = useState(() => ({ ...LAYOUTS.cyro }));
@@ -752,162 +681,6 @@ export default function App(){
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  // Decode share link data on initial load
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const encoded = params.get('data');
-      if (encoded) {
-        const data = decodeShareData(encoded);
-        if (data) {
-          if (data.map) setMap({ ...data.map });
-          if (data.profile) setProfile(data.profile);
-          if (data.layout) setLayout({ ...data.layout });
-          if (data.gameTitle != null) setGameTitle(data.gameTitle);
-          if (typeof data.gloss === 'boolean') setGloss(data.gloss);
-          if (typeof data.showNumbers === 'boolean') setShowNumbers(data.showNumbers);
-          if (typeof data.snapGrid === 'boolean') setSnapGrid(data.snapGrid);
-          if (typeof data.showGrid === 'boolean') setShowGrid(data.showGrid);
-          if (data.printOptions) setPrintOptions({ ...data.printOptions });
-        }
-      }
-    } catch (err) {
-      console.error('Failed to decode share data', err);
-    }
-  }, []);
-
-  // Mobile settings overlay ref and state
-  // Refs for full‑screen mobile overlays. settingsRef points to the settings panel body and
-  // editRef points to the key edit panel body. They are used to detect clicks inside the
-  // overlays so that outside clicks can dismiss them.
-  const settingsRef = useRef(null);
-  const editRef     = useRef(null);
-  // Mobile overlay visibility flags. When `showMobileSettings` or `showMobileEdit` are true
-  // the corresponding full‑screen overlay is rendered.
-  const [showMobileSettings, setShowMobileSettings] = useState(false);
-  const [showMobileEdit,     setShowMobileEdit]     = useState(false);
-
-  // Mobile save menu visibility. Controls the dropdown menu for save options on mobile.
-  const [showMobileSaveMenu, setShowMobileSaveMenu] = useState(false);
-
-  // Print options for PNG export. Controls whether colors and numbers are printed and whether
-  // a group legend or title is included. These options are adjustable by the user in settings.
-  const [printOptions, setPrintOptions] = useState({
-    showColors: true,
-    showNumbers: true,
-    includeLegend: true,
-    includeTitle: true,
-  });
-
-  // Profile management: store multiple custom key maps that users can switch between.
-  // These profiles are persisted in localStorage. Each profile has a name and a map.
-  const [profilesList, setProfilesList] = useState(() => {
-    try {
-      const stored = JSON.parse(window.localStorage.getItem('azeronProfiles') || '[]');
-      return Array.isArray(stored) ? stored : [];
-    } catch {
-      return [];
-    }
-  });
-  const [currentProfileIndex, setCurrentProfileIndex] = useState(() => {
-    const idx = parseInt(window.localStorage.getItem('azeronCurrentProfile') || '0', 10);
-    return isNaN(idx) ? 0 : idx;
-  });
-
-  // Persist profiles and current index to localStorage whenever they change
-  useEffect(() => {
-    try {
-      window.localStorage.setItem('azeronProfiles', JSON.stringify(profilesList));
-    } catch {}
-  }, [profilesList]);
-  useEffect(() => {
-    try {
-      window.localStorage.setItem('azeronCurrentProfile', String(currentProfileIndex));
-    } catch {}
-  }, [currentProfileIndex]);
-
-  // When currentProfileIndex changes, load that profile's map
-  useEffect(() => {
-    if (profilesList[currentProfileIndex] && profilesList[currentProfileIndex].map) {
-      const prof = profilesList[currentProfileIndex];
-      setMap(prev => {
-        // Spread to avoid mutations
-        return { ...prof.map };
-      });
-    }
-  }, [currentProfileIndex]);
-
-  // Save the current map as a new profile
-  const saveCurrentProfile = () => {
-    const name = window.prompt('Profile name:', `Profile ${profilesList.length + 1}`);
-    if (!name) return;
-    const newProfiles = [...profilesList, { name, map: { ...map } }];
-    setProfilesList(newProfiles);
-    setCurrentProfileIndex(newProfiles.length - 1);
-  };
-
-  // Load a profile by index (string or number)
-  const loadProfileByIndex = (idx) => {
-    const i = parseInt(idx, 10);
-    if (!isNaN(i) && profilesList[i] && profilesList[i].map) {
-      setCurrentProfileIndex(i);
-    }
-  };
-
-  // Import an official JSON profile file and merge its button labels into the current map.
-  // This expects the file contents to be a JSON object similar to the vendor exports,
-  // containing button definitions. It does not handle CSV or other formats.
-  const importOfficialProfileFile = (file) => {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const json = JSON.parse(ev.target.result);
-        setMap(prev => applyVendorToMap(json, layout, prev));
-      } catch (err) {
-        console.error('JSON import failed', err);
-        alert('Failed to import profile');
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  // Prompt the user for an Azeron export code (URL-safe Base64 + LZMA) and
-  // import it into the current map. Uses importAzeronCode to handle decoding.
-  const handleImportCode = async () => {
-    const code = window.prompt('Paste Azeron export code:');
-    if (!code) return;
-    try {
-      await importAzeronCode(code.trim(), layout, setMap);
-    } catch (err) {
-      console.error('Import code failed', err);
-    }
-  };
-
-  // CSV export/import functionality removed. See handleImportCode and
-  // importOfficialProfileFile for the new import mechanisms.
-
-  // Generate and copy a share link with encoded map to clipboard
-  const exportShareLink = () => {
-    const payload = {
-      map,
-      profile,
-      layout,
-      gameTitle,
-      gloss,
-      showNumbers,
-      snapGrid,
-      showGrid,
-      printOptions,
-    };
-    const encoded = encodeShareData(payload);
-    const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
-    navigator.clipboard.writeText(url).then(() => {
-      alert('Share link copied to clipboard');
-    }, () => {
-      alert('Unable to copy share link');
-    });
-  };
-
   const mu = map["MU"] || { label:"Mouse Up", color: BASE.teal };
   const md = map["MD"] || { label:"Mouse Down", color: BASE.indigo };
 
@@ -926,27 +699,24 @@ export default function App(){
   };
   const { W: CANVAS_W, H: CANVAS_H } = calcExtents(layout);
 
-  // Close mobile overlays when clicking outside of them. This effect runs whenever either
-  // overlay is open. It checks whether the click occurred within the settings or edit panels,
-  // within the context menu or emoji picker, or on the stage itself, and only closes the
-  // overlays when the click is elsewhere on the document.
-  useEffect(() => {
-    const handleOutside = (e) => {
-      if (settingsRef.current && settingsRef.current.contains(e.target)) return;
-      if (editRef.current && editRef.current.contains(e.target)) return;
-      if (e.target.closest?.(".ctxMenu") || e.target.closest?.(".emojiPanel")) return;
-      const stageRoot = document.getElementById("stage-root");
-      if (stageRoot?.contains(e.target)) return;
-      if (showMobileSettings) setShowMobileSettings(false);
-      if (showMobileEdit) setShowMobileEdit(false);
-    };
-    document.addEventListener("mousedown", handleOutside);
-    document.addEventListener("touchstart", handleOutside, { passive: true });
-    return () => {
-      document.removeEventListener("mousedown", handleOutside);
-      document.removeEventListener("touchstart", handleOutside);
-    };
-  }, [showMobileSettings, showMobileEdit]);
+  // Compute a legend of groups/zones for display above the stage. Each entry
+  // contains the group name and an array of colours derived from the keys
+  // belonging to that group. The legend bar will render the first colour
+  // only for each group as a dot. Memoise this so it recalculates only
+  // when the layout or map changes.
+  const groupLegend = useMemo(() => {
+    const groups = {};
+    Object.entries(layout).forEach(([id, pos]) => {
+      if (pos.blank || pos.analog || pos.split) return;
+      const g = map[id]?.group;
+      if (g) {
+        const col = map[id]?.color || BASE.blue;
+        if (!groups[g]) groups[g] = [];
+        groups[g].push(col);
+      }
+    });
+    return Object.entries(groups);
+  }, [layout, map]);
 
   // Fit zoom (responsive)
   useEffect(()=>{
@@ -1051,32 +821,21 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     setSelection([]); setShowPopover(false); setMenu(null);
   },[profile]);
 
-  /* Clear selection and popover when clicking outside of the stage and any overlays. This effect
-     is separate from the overlay close logic so that selection and menus are cleared even when
-     no mobile overlays are open. */
-  useEffect(() => {
-    const onDown = (e) => {
-      // ignore clicks inside mobile overlays
-      if (settingsRef.current && settingsRef.current.contains(e.target)) return;
-      if (editRef.current && editRef.current.contains(e.target)) return;
-      // ignore clicks on context menus or emoji picker
-      if (e.target.closest?.(".ctxMenu") || e.target.closest?.(".emojiPanel")) return;
-      // ignore clicks on the stage so selection clears via stage handlers
+  /* Click away */
+  useEffect(()=>{
+    const onDown = (e)=>{
       const stage = document.getElementById("stage-root");
       if (stage?.contains(e.target)) return;
-      // clear selection and close popovers/menus and mobile save dropdown
-      setSelection([]);
-      setShowPopover(false);
-      setMenu(null);
-      setShowMobileSaveMenu(false);
+      if (e.target.closest?.(".ctxMenu") || e.target.closest?.(".emojiPanel")) return;
+      setSelection([]); setShowPopover(false); setMenu(null);
     };
     document.addEventListener("mousedown", onDown);
-    document.addEventListener("touchstart", onDown, { passive: true });
-    return () => {
+    document.addEventListener("touchstart", onDown, { passive:true });
+    return ()=>{
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("touchstart", onDown);
     };
-  }, []);
+  },[]);
 
   const colorFor = (id) => map[id]?.color || BASE.blue;
 
@@ -1098,43 +857,8 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
 
   const toggleSelect = (id) => setSelection(s=> s.includes(id) ? s.filter(x=>x!==id) : [...s, id]);
 
-  // Compute a legend of groups (zones) assigned to keys. Each entry is [groupName, [colors...]]
-  const groupLegend = React.useMemo(() => {
-    const result = {};
-    Object.entries(map).forEach(([k, d]) => {
-      if (d && d.group) {
-        if (!result[d.group]) result[d.group] = [];
-        if (d.color) result[d.group].push(d.color);
-      }
-    });
-    return Object.entries(result);
-  }, [map]);
-
   const onPick = (id, e) => {
-    // Only respond to left clicks or touches; ignore right click events for selection
     if (e?.button !== 0 && e?.pointerType !== "touch") return;
-    // On mobile devices, selecting a key opens the full‑screen edit overlay. When
-    // multi‑select mode is active (or the user holds ctrl/meta), we toggle the key in
-    // the current selection; otherwise we replace the selection with this key. Any
-    // existing popovers or context menus are closed.
-    if (isMobile) {
-      if (multi || e?.ctrlKey || e?.metaKey) {
-        // In multi mode just update the selection; do not open the edit panel
-        toggleSelect(id);
-        setShowPopover(false);
-        setMenu(null);
-        return;
-      } else {
-        // Single select: replace selection and open the edit panel
-        setSelection([id]);
-        setShowPopover(false);
-        setMenu(null);
-        setShowMobileEdit(true);
-        return;
-      }
-    }
-    // Desktop behaviour: show the popover and update the selection. Multi‑select is
-    // supported via ctrl/meta or the multi flag.
     if (multi || e?.ctrlKey || e?.metaKey) {
       setShowPopover(true);
       setMenu(null);
@@ -1209,15 +933,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
   const doCopy = () => {
     const id = selection[0]; if(!id) return;
     const d = map[id] || {};
-    setClipboard({
-      label: d.label,
-      sub: d.sub,
-      emoji: d.emoji,
-      color: d.color,
-      image: d.image || null,
-      imageMode: d.imageMode || 'icon',
-      group: d.group
-    });
+    setClipboard({ label:d.label, sub:d.sub, emoji:d.emoji, color:d.color, image:d.image || null, imageMode:d.imageMode || "icon" });
   };
   const doPaste = (opts) => {
     if(!clipboard || selection.length===0) return;
@@ -1231,7 +947,6 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
         if(opts.emoji) apply.emoji = clipboard.emoji;
         if(opts.color && clipboard.color) apply.color = clipboard.color;
         if(opts.image) { apply.image = clipboard.image || null; apply.imageMode = clipboard.imageMode || "icon"; }
-        if(opts.group) apply.group = clipboard.group;
         next[id] = apply;
       });
       return next;
@@ -1265,694 +980,6 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     });
   };
 
-  // Mobile settings sheet content replicating the desktop top bar
-  const MobileSettingsContent = () => (
-    <div className="toolbarWrap">
-      {/* Bar 1 */}
-      <div className="rowWrap">
-        <DevicePicker value={profile} onChange={setProfile} />
-
-        <label className="badge"><input type="checkbox" checked={locked} onChange={e=>setLocked(e.target.checked)} /> Lock</label>
-        {/* Hide the Multi toggle on mobile since multi‑select is controlled via the top‑bar multi icon */}
-        {!isMobile && (
-          <label className="badge"><input type="checkbox" checked={multi} onChange={e=>setMulti(e.target.checked)} /> Multi</label>
-        )}
-        <label className="badge"><input type="checkbox" checked={snapGrid} onChange={e=>setSnapGrid(e.target.checked)} /> Snap</label>
-        <label className="badge"><input type="checkbox" checked={showGrid} onChange={e=>setShowGrid(e.target.checked)} /> Grid</label>
-        <label className="badge"><input type="checkbox" checked={gloss} onChange={e=>setGloss(e.target.checked)} /> Gloss</label>
-        <label className="badge"><input type="checkbox" checked={showNumbers} onChange={e=>setShowNumbers(e.target.checked)} /> #</label>
-
-        <button className="btn" onClick={invertLayout}>Invert</button>
-        <button
-          className="btn"
-          title="Randomize colors"
-          onClick={() => {
-            setMap(prev => {
-              const next = { ...prev };
-              Object.keys(layout).forEach(id => {
-                // Skip blank/analog/split keys and keys belonging to a group (so their colors remain locked)
-                if (layout[id].blank || layout[id].analog || layout[id].split) return;
-                if (prev[id] && prev[id].group) return;
-                next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
-              });
-              // Randomize MU and MD if they are not grouped
-              if (!(prev["MU"] && prev["MU"].group)) {
-                next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
-              }
-              if (!(prev["MD"] && prev["MD"].group)) {
-                next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
-              }
-              return next;
-            });
-          }}
-        >
-          🎲
-        </button>
-      </div>
-
-      {/* Bar 2 */}
-      <div className="rowWrap centerWrap">
-        <input
-          className="input titleInput titleInputXL"
-          placeholder="Title of your game"
-          value={gameTitle}
-          onChange={e=>setGameTitle(e.target.value)}
-          style={{ maxWidth:620, minWidth:260 }}
-        />
-
-        {/* THEME / SAVE / LOAD */}
-        <div className="compactMenuWrap">
-          <button
-            className="iconToggle"
-            title="Theme & file actions"
-            onClick={(e)=>{
-              const menu = e.currentTarget.nextSibling;
-              menu.classList.toggle("open");
-            }}
-          >
-            <ThemeIcon />
-          </button>
-          <div
-            className="compactMenu"
-            onMouseLeave={(e)=>e.currentTarget.classList.remove("open")}
-          >
-            <div className="row">
-              <select
-                className="select"
-                defaultValue="__none__"
-                aria-label="Apply preset theme"
-                onChange={e=>{
-                  const id = e.target.value;
-                  if (id === "__none__") return;
-                  setMap(prev => applyTheme(prev, layout, id));
-                }}
-              >
-                <option value="__none__">Apply preset theme…</option>
-                {(() => {
-                  const byCat = THEMES.reduce((acc, t) => {
-                    const k = t.cat || "Other";
-                    (acc[k] ||= []).push(t);
-                    return acc;
-                  }, {});
-                  Object.values(byCat).forEach(arr =>
-                    arr.sort((a,b) => a.name.localeCompare(b.name))
-                  );
-                  const order = ["Core", "Controllers", "Games", "Color Vision", "Other"];
-                  const orderedCats = [
-                    ...order.filter(k => byCat[k]),
-                    ...Object.keys(byCat).filter(k => !order.includes(k)),
-                  ];
-                  return orderedCats.map(cat => (
-                    <optgroup key={cat} label={cat}>
-                      {byCat[cat].map(t => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
-                    </optgroup>
-                  ));
-                })()}
-              </select>
-            </div>
-
-            <div className="row">
-              <button
-                className="btn"
-                onClick={()=>{
-                  const payload = { version: 14, profile, layout, map, gameTitle, gloss, showNumbers };
-                  const a = document.createElement("a");
-                  a.href = URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)], { type:"application/json" }));
-                  a.download = `azeron_${profile}_theme.json`;
-                  a.click(); URL.revokeObjectURL(a.href);
-                }}
-              >
-                <SaveIcon />&nbsp; Save Theme JSON
-              </button>
-            </div>
-
-            <div className="row">
-              <button
-                className="btn"
-                onClick={()=>{
-                  const inp = document.createElement("input");
-                  inp.type="file"; inp.accept="application/json,.json";
-                  inp.onchange = async (e)=>{
-                    const f=e.target.files?.[0]; if(!f) return;
-                    try{
-                      const data = JSON.parse(await f.text());
-                      const next = data.layout ? (data.layout.positions || data.layout) : (LAYOUTS[data.profile||profile] || LAYOUTS[profile]);
-                      if(data.profile) setProfile(data.profile);
-                      if(next) setLayout({ ...next });
-                      if(data.map) setMap(data.map);
-                      if(data.gameTitle!=null) setGameTitle(data.gameTitle);
-                      if(data.gloss!=null) setGloss(!!data.gloss);
-                      if(data.showNumbers!=null) setShowNumbers(!!data.showNumbers);
-                    }catch{ alert("Failed to load theme"); }
-                  };
-                  inp.click();
-                }}
-              >
-                <FolderIcon />&nbsp; Load Theme JSON
-              </button>
-            </div>
-            <div className="row">
-              <button className="btn" onClick={(e)=>e.currentTarget.closest(".compactMenu").classList.remove("open")}>Close</button>
-            </div>
-          </div>
-        </div>
-
-        {/* Save images */}
-        <div style={{ position: "relative" }}>
-          <button
-            className="btn primary"
-            title="Save"
-            onClick={(e) => {
-              const m = e.currentTarget.nextSibling;
-              m.style.display = m.style.display === "block" ? "none" : "block";
-            }}
-            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#0b1f6f", borderColor:"rgba(255,255,255,.14)" }}
-          >
-            Save <span style={{ marginLeft: 8 }}>▾</span>
-          </button>
-          <div
-            style={{
-              position:"absolute",
-              top:"calc(100% + 6px)",
-              right:0,
-              display:"none",
-              background:"rgba(18,23,53,0.96)",
-              border:"1px solid rgba(255,255,255,.10)",
-              borderRadius:12,
-              boxShadow:"0 12px 28px rgba(0,0,0,.45)",
-              padding:8,
-              zIndex:10,
-              minWidth:220
-            }}
-            onMouseLeave={(e)=>{ e.currentTarget.style.display="none"; }}
-          >
-            <button className="btn" style={{ width:"100%", marginBottom:6 }} onClick={saveImage}>Save printer friendly PNG</button>
-            <button className="btn" style={{ width:"100%" }} onClick={exportUI}>Save colored UI PNG</button>
-          </div>
-        </div>
-
-
-        {/* Zoom controls are omitted on mobile devices; use pinch‑to‑zoom instead */}
-        {!isMobile && (
-          <>
-            <button className="iconToggle" title="Zoom Out" onClick={() => setZoom(z => Math.max(0.4, +(z - 0.1).toFixed(2)))}><ZoomOutIcon /></button>
-            <button className="iconToggle" title="Zoom In"  onClick={() => setZoom(z => Math.min(2,   +(z + 0.1).toFixed(2)))}><ZoomInIcon /></button>
-          </>
-        )}
-
-        <button
-          className="btn iconLabel"
-          onClick={()=>{
-            const next = LAYOUTS[profile] || FALLBACK.positions;
-            setLayout({ ...next });
-            setMap(defaultKeymapForLayout(next));
-            setSelection([]); setShowPopover(false); setMenu(null);
-          }}
-        >
-          <ResetIcon size={16} />
-          <span>Reset Layout</span>
-        </button>
-      </div>
-    </div>
-  );
-
-  // Mobile edit overlay content. Displays a preview of the currently selected key and
-  // provides controls for editing label, sub label, emoji, color, image and image mode.
-  // It also exposes copy/paste operations in a two‑column grid. A Continue button
-  // closes the overlay when the user is finished editing.
-  const MobileEditContent = () => {
-    if (!lastSelected) return null;
-    const activeKey = map[lastSelected] || {};
-    // Local input states for label, sub and group. These avoid updating the
-    // keymap on every keystroke, which on some mobile keyboards (e.g. Samsung
-    // Galaxy S25 Ultra) causes the input to lose focus and the keyboard to
-    // collapse. Instead, we update the global keymap only when the user
-    // presses the Continue button.
-    const [labelInput, setLabelInput] = React.useState(activeKey.label || "");
-    const [subInput, setSubInput] = React.useState(activeKey.sub || "");
-    const [groupInput, setGroupInput] = React.useState(activeKey.group || "");
-    // When selection changes or activeKey updates (e.g. switching between keys),
-    // sync the local inputs to reflect the new key values.
-    React.useEffect(() => {
-      setLabelInput(activeKey.label || "");
-      setSubInput(activeKey.sub || "");
-      setGroupInput(activeKey.group || "");
-    }, [lastSelected, activeKey.label, activeKey.sub, activeKey.group]);
-    // Local state for quick group name in multi-edit mode
-    const [quickGroupName, setQuickGroupName] = React.useState("");
-    const flatBg = normalizeHex(activeKey.color || BASE.blue);
-    const pair   = textPair(flatBg);
-    const labelSize = activeKey.label ? (activeKey.label.length > 30 ? 14 : activeKey.label.length > 22 ? 16 : 18) : 18;
-    const subSize   = activeKey.sub   ? (activeKey.sub.length   > 28 ? 13 : activeKey.sub.length   > 20 ? 14 : 16) : 16;
-
-    // Hidden input reference (legacy). The native OS emoji picker is no longer used on mobile; we use the custom emoji picker for consistency.
-    const emojiNativeRef = React.useRef(null);
-    // Define the list of key actions. The last action spans both columns.
-    const keyActions = [
-      { label: "Copy",      fn: () => doCopy() },
-      { label: "Paste Label",  fn: () => doPaste({ label: true }) },
-      { label: "Paste Sub",    fn: () => doPaste({ sub: true }) },
-      { label: "Paste Emoji",  fn: () => doPaste({ emoji: true }) },
-      { label: "Paste Color",  fn: () => doPaste({ color: true }) },
-      { label: "Paste Image",  fn: () => doPaste({ image: true }) },
-      { label: "Paste All",    fn: () => doPaste({ label: true, sub: true, emoji: true, color: true, image: true, group: true }), span: true }
-    ];
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          height: '100%',
-          overflowY: 'auto',
-          padding: 16,
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-        onTouchStart={(e) => e.stopPropagation()}
-      >
-        <div
-          style={{
-            width: '100%',
-            maxWidth: 460,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 14,
-          }}
-        >
-          {/* Preview row for selected keys when in multi-select mode. Only show when more than one key is selected. */}
-          {selection.length > 1 && (
-            <div
-              style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'nowrap', overflowX: 'auto' }}
-            >
-              {selection.slice(0, 3).map((sid, idx) => {
-                const kd = map[sid] || {};
-                const col = normalizeHex(kd.color || BASE.blue);
-                const tp = textPair(col);
-                const lbl = kd.label || '';
-                const fontSize = lbl.length > 10 ? 10 : lbl.length > 6 ? 12 : 14;
-                return (
-                  <div
-                    key={sid}
-                    style={{
-                      width: 80,
-                      height: 96,
-                      borderRadius: 12,
-                      background: col,
-                      boxShadow: '0 6px 16px rgba(0,0,0,.35)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'flex-start',
-                      justifyContent: 'flex-end',
-                      padding: '6px 8px',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {kd.image && kd.imageMode === 'cover' && (
-                      <img
-                        alt=""
-                        src={kd.image}
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12, zIndex: 0 }}
-                      />
-                    )}
-                    {kd.emoji && (
-                      <div style={{ zIndex: 2, fontSize: 22, marginBottom: 4 }}>{kd.emoji}</div>
-                    )}
-                    {kd.label && (
-                      <div
-                        style={{
-                          zIndex: 2,
-                          fontSize: fontSize,
-                          fontWeight: 700,
-                          lineHeight: 1.1,
-                          color: tp.label,
-                          maxWidth: '100%',
-                          overflow: 'hidden',
-                          whiteSpace: 'nowrap',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {kd.label}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              {selection.length > 3 && (
-                <div
-                  style={{
-                    width: 80,
-                    height: 96,
-                    borderRadius: 12,
-                    background: 'rgba(255,255,255,.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 32,
-                    fontWeight: 700,
-                    color: '#fff',
-                  }}
-                >
-                  +
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Quick group assignment: show when multiple keys are selected */}
-          {selection.length > 1 && (
-            <div>
-              <input
-                className="input"
-                placeholder="Name Quick Group"
-                value={quickGroupName}
-                onChange={e => setQuickGroupName(e.target.value)}
-                style={{ width: '100%', marginBottom: 8 }}
-              />
-              <button
-                className="btn primary"
-                onClick={() => {
-                  const name = quickGroupName.trim();
-                  if (name) {
-                    // Update all selected keys immediately via setField. Also update
-                    // the local group input so subsequent edits reflect the new group.
-                    setField('group', name);
-                    setGroupInput(name);
-                    setQuickGroupName('');
-                  }
-                }}
-                style={{ width: '100%' }}
-              >
-                Make Group
-              </button>
-            </div>
-          )}
-          {/* Preview of the selected key */}
-          <div style={{ alignSelf: 'center' }}>
-            <div
-              style={{
-                position: 'relative',
-                width: 120,
-                height: 140,
-                borderRadius: 18,
-                background: gloss
-                  ? `radial-gradient(130% 170% at 30% 10%, rgba(255,255,255,.35), rgba(255,255,255,.08) 42%, rgba(255,255,255,.04) 60%, transparent 70%),` +
-                    ` radial-gradient(120% 170% at 70% 90%, rgba(0,0,0,.30), rgba(0,0,0,.14) 40%, transparent 70%), ` + flatBg
-                  : flatBg,
-                boxShadow: '0 14px 28px rgba(0,0,0,.45)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                justifyContent: 'flex-end',
-                padding: '10px 12px',
-                overflow: 'hidden',
-              }}
-            >
-              {activeKey.image && activeKey.imageMode === 'cover' && (
-                <img
-                  alt=""
-                  src={activeKey.image}
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: 18, zIndex: 0 }}
-                />
-              )}
-              {activeKey.image && activeKey.imageMode !== 'cover' && (
-                <img
-                  alt=""
-                  src={activeKey.image}
-                  style={{ position: 'absolute', right: 8, top: 8, width: 26, height: 26, borderRadius: 6, objectFit: 'cover', boxShadow: '0 1px 4px rgba(0,0,0,.5)', zIndex: 2 }}
-                />
-              )}
-              {activeKey.emoji && (
-                <div style={{ zIndex: 2, fontSize: 32, marginBottom: 6 }}>{activeKey.emoji}</div>
-              )}
-              {activeKey.label && (
-                <div style={{ zIndex: 2, fontSize: labelSize, fontWeight: 700, lineHeight: 1.1, color: pair.label }}>
-                  {activeKey.label}
-                </div>
-              )}
-              {activeKey.sub && (
-                <div style={{ zIndex: 2, fontSize: subSize, color: pair.sub, opacity: 0.9 }}>{activeKey.sub}</div>
-              )}
-            </div>
-          </div>
-          {/* Editing fields */}
-          <div className="row">
-            <input
-              className="input"
-              placeholder="Label"
-              value={labelInput}
-              onChange={e => setLabelInput(e.target.value)}
-              style={{ width: '100%' }}
-            />
-          </div>
-          <div className="row">
-            <input
-              className="input"
-              placeholder="Sub"
-              value={subInput}
-              onChange={e => setSubInput(e.target.value)}
-              style={{ width: '100%' }}
-            />
-          </div>
-          {/* Group field: allows assigning a group/category to this key */}
-          <div className="row">
-            <input
-              className="input"
-              placeholder="Group"
-              value={groupInput}
-              onChange={e => setGroupInput(e.target.value)}
-              style={{ width: '100%' }}
-            />
-          </div>
-          <div className="row">
-            {/* Use the same custom emoji picker on both desktop and mobile. Clicking toggles the picker. */}
-            <button
-              ref={emojiButtonRef}
-              className="btn"
-              style={{ width: '100%', padding: '6px 10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-              onClick={() => setEmojiOpen(v => !v)}
-            >
-              <SmileIcon />
-              <span>{activeKey.emoji || 'Pick Emoji'}</span>
-            </button>
-          </div>
-          {emojiOpen && createPortal(
-            <>
-              <ScrollbarCSS />
-              <div
-                ref={pickerRef}
-                className="emojiPanel"
-                style={{
-                  position: 'fixed',
-                  zIndex: 9999,
-                  ...(() => {
-                    // Align the emoji panel relative to the button or hidden input.
-                    const r = emojiButtonRef.current?.getBoundingClientRect();
-                    const panelW = 360, pad = 8;
-                    const top = (r?.bottom ?? 0) + 6;
-                    let left = (r?.left ?? 0);
-                    const vw = window.innerWidth;
-                    if (left + panelW > vw - pad) left = Math.max(pad, vw - panelW - pad);
-                    return { top, left, width: panelW, maxHeight: 360 };
-                  })(),
-                  overflowY: 'auto', overflowX: 'hidden',
-                  boxShadow: '0 12px 28px rgba(0,0,0,.45)',
-                  borderRadius: 12,
-                  background: 'rgba(18,23,53,0.96)',
-                  border: '1px solid rgba(255,255,255,.10)',
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                <EmojiPicker
-                  theme="dark"
-                  autoFocusSearch={false}
-                  onEmojiClick={(data) => {
-                    setField('emoji', data.emoji);
-                    setEmojiOpen(false);
-                    emojiButtonRef.current?.focus();
-                  }}
-                />
-              </div>
-            </>,
-            document.body
-          )}
-          {/* Color picker row: color fills full width */}
-          <div style={{ marginTop: 10, width: '100%' }}>
-            <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Color</label>
-            <input
-              type="color"
-              className="colorPicker"
-              value={normalizeHex(activeKey.color || BASE.blue)}
-              onChange={e => setField('color', e.target.value)}
-              style={{ width: '100%', height: 36 }}
-            />
-          </div>
-
-          {/* Image functions: upload, mode toggle, remove */}
-          <div style={{ fontWeight: 600, fontSize: 14, marginTop: 12 }}>Image</div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', width: '100%' }}>
-            <label
-              htmlFor="img-upload-mobile"
-              className="iconBtn"
-              title="Upload image"
-              style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            >
-              <ImageIcon />
-            </label>
-            <input
-              id="img-upload-mobile"
-              type="file"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={async (e) => {
-                const f = e.target.files?.[0]; if (!f) return;
-                const url = await new Promise(r => {
-                  const rd = new FileReader();
-                  rd.onload = () => r(rd.result);
-                  rd.readAsDataURL(f);
-                });
-                setField('image', url);
-                e.target.value = '';
-              }}
-            />
-            <button
-              className={`btn ${activeKey.imageMode !== 'cover' ? 'primary' : ''}`}
-              onClick={() => setField('imageMode', 'icon')}
-            >
-              Icon
-            </button>
-            <button
-              className={`btn ${activeKey.imageMode === 'cover' ? 'primary' : ''}`}
-              onClick={() => setField('imageMode', 'cover')}
-            >
-              Cover
-            </button>
-            <button
-              className="btn"
-              onClick={() => {
-                setField('image', null);
-                setField('imageMode', 'icon');
-              }}
-            >
-              Remove
-            </button>
-          </div>
-          <div style={{ fontWeight: 700, fontSize: 14 }}>Key actions</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, width: '100%' }}>
-            {keyActions.map(({ label, fn, span }, idx) => (
-              <button
-                key={label}
-                className={`btn ${span ? 'primary' : ''}`}
-                onClick={fn}
-                style={span ? { gridColumn: '1 / -1' } : {}}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <button
-            className="btn"
-            onClick={() => {
-              // Commit local edits to the keymap before closing. Update all selected keys
-              // with the current label, sub, and group values. This avoids re-rendering
-              // the whole app on every keystroke and preserves keyboard focus during editing.
-              setMap(prev => {
-                const next = { ...prev };
-                selection.forEach(id => {
-                  const base = next[id] || {};
-                  next[id] = { ...base, label: labelInput, sub: subInput, group: groupInput };
-                });
-                return next;
-              });
-              setShowMobileEdit(false);
-            }}
-            style={{ marginTop: 8 }}
-          >
-            Continue
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  // MobileSettingsPanel presents settings in a simple vertical list for small screens.
-  // It includes toggles for lock/multi/snap/grid/gloss/numbers, buttons to invert the layout,
-  // randomize colors, adjust zoom, reset the layout, and a close button. A DevicePicker is
-  // provided to switch between supported devices.
-  const MobileSettingsPanel = () => {
-    return (
-      <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontWeight: 700, fontSize: 14 }}>Settings</div>
-        {/* Device picker for hardware profile */}
-        <DevicePicker value={profile} onChange={setProfile} />
-        {/* Profile selection removed completely per user request */}
-        {/* Toggles for layout and appearance */}
-        <label className="badge"><input type="checkbox" checked={locked} onChange={e => setLocked(e.target.checked)} /> Lock</label>
-        {/* Hide the Multi toggle on mobile; multi‑select is controlled via the top‑bar multi icon */}
-        {!isMobile && (
-          <label className="badge"><input type="checkbox" checked={multi} onChange={e => setMulti(e.target.checked)} /> Multi</label>
-        )}
-        <label className="badge"><input type="checkbox" checked={snapGrid} onChange={e => setSnapGrid(e.target.checked)} /> Snap</label>
-        <label className="badge"><input type="checkbox" checked={showGrid} onChange={e => setShowGrid(e.target.checked)} /> Grid</label>
-        <label className="badge"><input type="checkbox" checked={gloss} onChange={e => setGloss(e.target.checked)} /> Gloss</label>
-        <label className="badge"><input type="checkbox" checked={showNumbers} onChange={e => setShowNumbers(e.target.checked)} /> #</label>
-        {/* Print options */}
-        <div style={{ fontWeight: 600, marginTop: 12 }}>Print Options</div>
-        <label className="badge"><input type="checkbox" checked={printOptions.showColors} onChange={e => setPrintOptions(opt => ({ ...opt, showColors: e.target.checked }))} /> Show Colors</label>
-        <label className="badge"><input type="checkbox" checked={printOptions.showNumbers} onChange={e => setPrintOptions(opt => ({ ...opt, showNumbers: e.target.checked }))} /> Show Numbers</label>
-        <label className="badge"><input type="checkbox" checked={printOptions.includeLegend} onChange={e => setPrintOptions(opt => ({ ...opt, includeLegend: e.target.checked }))} /> Legend</label>
-        <label className="badge"><input type="checkbox" checked={printOptions.includeTitle} onChange={e => setPrintOptions(opt => ({ ...opt, includeTitle: e.target.checked }))} /> Title</label>
-        {/* Key layout actions */}
-        <button className="btn" onClick={invertLayout}>Invert</button>
-        <button
-          className="btn"
-          onClick={() => {
-            setMap(prev => {
-              const next = { ...prev };
-              Object.keys(layout).forEach(id => {
-                // Skip blank/analog/split keys and group-locked keys
-                if (layout[id].blank || layout[id].analog || layout[id].split) return;
-                if (prev[id] && prev[id].group) return;
-                next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
-              });
-              // Randomize MU and MD if they are not grouped
-              if (!(prev['MU'] && prev['MU'].group)) {
-                next['MU'] = { ...(next['MU'] || {}), color: seededRandomColor('MU' + Date.now()) };
-              }
-              if (!(prev['MD'] && prev['MD'].group)) {
-                next['MD'] = { ...(next['MD'] || {}), color: seededRandomColor('MD' + Date.now()) };
-              }
-              return next;
-            });
-          }}
-        >
-          Randomize Colors
-        </button>
-        {/* Omit zoom controls on mobile; pinch‑to‑zoom provides this functionality */}
-        {!isMobile && (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="iconToggle" title="Zoom Out" onClick={() => setZoom(z => Math.max(0.4, +(z - 0.1).toFixed(2)))}><ZoomOutIcon /></button>
-            <button className="iconToggle" title="Zoom In"  onClick={() => setZoom(z => Math.min(2,   +(z + 0.1).toFixed(2)))}><ZoomInIcon /></button>
-          </div>
-        )}
-        <button
-          className="btn iconLabel"
-          onClick={() => {
-            const next = LAYOUTS[profile] || FALLBACK.positions;
-            setLayout({ ...next });
-            setMap(defaultKeymapForLayout(next));
-            setSelection([]); setShowPopover(false); setMenu(null);
-          }}
-        >
-          <ResetIcon size={16} />&nbsp;Reset Layout
-        </button>
-        {/* Import/export and sharing (removed per user request) */}
-        {/* Hidden file input removed */}
-        <button className="btn" onClick={() => setShowMobileSettings(false)}>Close</button>
-      </div>
-    );
-  };
-
   /* Export PNG — centered + printer-friendly */
   const saveImage = async () => {
     const c = canvasRef.current;
@@ -1968,47 +995,25 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-    // 2) Title and headers (if enabled)
-    if (printOptions?.includeTitle) {
-      /*
-       * Draw a neutral header and footer. The header shows the game title (or
-       * fallback title) and the device type. The footer gives credit to
-       * JimmyCPW. To adhere to the request of having only the keys in color,
-       * the header and footer use a monochrome gradient.
-       */
-      const headerH = 72;
-      const footerH = 40;
-      // header background (monochrome)
-      const grdH = ctx.createLinearGradient(0, 0, 0, headerH);
-      grdH.addColorStop(0, '#1a1a33');
-      grdH.addColorStop(1, '#0e0e21');
-      ctx.fillStyle = grdH;
-      ctx.fillRect(0, 0, CANVAS_W, headerH);
+    // 2) Title
+    const title =
+      gameTitle?.trim() ||
+      (profile[0].toUpperCase() + profile.slice(1)) + " Layout";
+    ctx.fillStyle = "#111";
+    ctx.font = "800 32px Montserrat, ui-sans-serif";
+    const tw = ctx.measureText(title).width;
+    ctx.fillText(title, (CANVAS_W - tw) / 2, 48);
 
-      // Determine game title and device
-      const game = gameTitle?.trim() || '';
-      const deviceName = profile ? (profile[0].toUpperCase() + profile.slice(1)) : '';
-      // Draw game name (first line)
-      ctx.fillStyle = '#f2f2f2';
-      ctx.font = '700 30px Montserrat, ui-sans-serif';
-      const gt = game || (deviceName ? `${deviceName} Layout` : '');
-      if (gt) ctx.fillText(gt, 20, 40);
-      // Draw device type (second line)
-      ctx.font = '600 20px Montserrat, ui-sans-serif';
-      if (deviceName) ctx.fillText(deviceName, 20, 68);
+    // App name
+    ctx.font = "600 20px Montserrat, ui-sans-serif";
+    const appName = "Azeron Keymap Helper";
+    const aw = ctx.measureText(appName).width;
+    ctx.fillText(appName, (CANVAS_W - aw) / 2, 80);
 
-      // footer background (monochrome)
-      const grdF = ctx.createLinearGradient(0, CANVAS_H - footerH, 0, CANVAS_H);
-      grdF.addColorStop(0, '#0e0e21');
-      grdF.addColorStop(1, '#1a1a33');
-      ctx.fillStyle = grdF;
-      ctx.fillRect(0, CANVAS_H - footerH, CANVAS_W, footerH);
-      // footer text (credit)
-      ctx.fillStyle = '#f2f2f2';
-      ctx.font = '600 16px Montserrat, ui-sans-serif';
-      const credit = 'Created by JimmyCPW';
-      ctx.fillText(credit, 20, CANVAS_H - 20);
-    }
+    // Author + disclaimer
+    ctx.font = "italic 14px Montserrat, ui-sans-serif";
+    ctx.fillStyle = "#444";
+    ctx.fillText("Created by JimmyCPW — not affiliated with Azeron", (CANVAS_W - 420) / 2, CANVAS_H - 40);
 
     // 3) Preload key images
     const withImages = Object.entries(layout)
@@ -2033,118 +1038,40 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
     const layoutWidth = maxX - minX;
     const layoutHeight = maxY - minY;
     const offsetX = (CANVAS_W - layoutWidth) / 2 - minX;
-    // Calculate vertical offset to center the layout between the header and footer.
-    let offsetY;
-    if (printOptions?.includeTitle) {
-      // match header/footer heights used in the drawing above
-      const headerH = 72;
-      const footerH = 40;
-      const availH = CANVAS_H - headerH - footerH;
-      offsetY = headerH + (availH - layoutHeight) / 2 - minY;
-    } else {
-      // fallback to legacy margin when no title/headers
-      const legacyTop = 40;
-      offsetY = (CANVAS_H - layoutHeight) / 2 - minY + legacyTop;
-    }
+    const offsetY = (CANVAS_H - layoutHeight) / 2 - minY + 40;
 
     // 5) Draw keys and split
-    const colorOverride = printOptions?.showColors ? null : '#cccccc';
     Object.entries(layout).forEach(([id, pos]) => {
       if (pos.blank) return;
       if (pos.split) {
         const up = map["MU"] || { label: "Mouse Up", color: BASE.teal };
         const down = map["MD"] || { label: "Mouse Down", color: BASE.indigo };
-        drawSplit(ctx, pos.x + offsetX, pos.y + offsetY, KEY_W, KEY_H,
-          colorOverride ? { ...up, color: colorOverride } : up,
-          colorOverride ? { ...down, color: colorOverride } : down
-        );
+        drawSplit(ctx, pos.x + offsetX, pos.y + offsetY, KEY_W, KEY_H, up, down);
         return;
       }
       if (pos.analog) return;
-      const keyData = map[id] || {};
-      const overrideData = colorOverride ? { ...keyData, color: colorOverride } : keyData;
-      drawKey(ctx, pos.x + offsetX, pos.y + offsetY, KEY_W, KEY_H, overrideData);
+      drawKey(ctx, pos.x + offsetX, pos.y + offsetY, KEY_W, KEY_H, map[id] || {});
     });
 
     // 6) Analog stick
     const ap = layout["ANALOG"];
     if (ap) drawAnalogMonoline(ctx, ap.x + offsetX, ap.y + offsetY);
 
-    // Group legend (optional)
-    if (printOptions?.includeLegend) {
-      // Collect groups from map
-      const groups = {};
-      Object.entries(map).forEach(([id, data]) => {
-        if (data && data.group) {
-          if (!groups[data.group]) groups[data.group] = [];
-          if (data.color) groups[data.group].push(data.color);
-        }
-      });
-      const entries = Object.entries(groups);
-      if (entries.length) {
-        let y = CANVAS_H - 140;
-        const x0 = 40;
-        entries.forEach(([g, cols]) => {
-          const col = cols.length ? cols[0] : '#888';
-          // color box
-          ctx.fillStyle = col;
-          ctx.fillRect(x0, y, 18, 12);
-          ctx.strokeStyle = '#222';
-          ctx.lineWidth = 0.5;
-          ctx.strokeRect(x0, y, 18, 12);
-          // label
-          ctx.fillStyle = '#111';
-          ctx.font = '600 14px Montserrat, ui-sans-serif';
-          ctx.fillText(g, x0 + 24, y + 11);
-          y += 20;
-        });
-      }
-    }
     // 7) Footer
     const footer = "Generated with Azeron Keymap Helper — not affiliated with Azeron";
-    // draw this in white so it stands out on the neutral footer background
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#444";
     ctx.font = "600 14px Montserrat, ui-sans-serif";
     const fw = ctx.measureText(footer).width;
     ctx.fillText(footer, (CANVAS_W - fw) / 2, CANVAS_H - 20);
 
-    // 8) Prepare final canvas sized to standard US letter ratio (11x8.5) in landscape.
-    const targetRatio = 11 / 8.5;
-    const origW = c.width; // pixel dimensions include devicePixelRatio
-    const origH = c.height;
-    let finalW = origW;
-    let finalH = origH;
-    if (origW / origH > targetRatio) {
-      // original is wider than 11:8.5, expand height to fit ratio
-      finalH = Math.round(origW / targetRatio);
-      finalW = origW;
-    } else {
-      // original is taller/narrower, expand width to fit ratio
-      finalW = Math.round(origH * targetRatio);
-      finalH = origH;
-    }
-    // Create a new canvas with the desired ratio
-    const finalCanvas = document.createElement('canvas');
-    finalCanvas.width = finalW;
-    finalCanvas.height = finalH;
-    const fctx = finalCanvas.getContext('2d');
-    // fill background with white
-    fctx.fillStyle = '#ffffff';
-    fctx.fillRect(0, 0, finalW, finalH);
-    // center original canvas within final canvas
-    const offsetX2 = (finalW - origW) / 2;
-    const offsetY2 = (finalH - origH) / 2;
-    fctx.drawImage(c, offsetX2, offsetY2, origW, origH);
-    // Convert final canvas to PNG and trigger download
-    const url = finalCanvas.toDataURL('image/png');
-    // For mobile Safari/Chrome the download may not trigger unless the element is part of the DOM.
-    const a = document.createElement('a');
-    a.download = `azeron_${profile}_print.png`;
-    a.href = url;
-    // Append to body to ensure click works on mobile
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    // 8) Download
+    // Use toBlob rather than toDataURL to improve mobile compatibility.
+    // Once the blob is created, hand it to downloadBlob() to trigger a
+    // download on both mobile and desktop browsers.
+    c.toBlob((blob) => {
+      if (!blob) return;
+      downloadBlob(blob, `azeron_${profile}_print.png`);
+    });
   };
 
   // glossy UI DOM snapshot
@@ -2168,7 +1095,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
       stage.setAttribute("data-exporting", "1");
       if (grid) grid.style.display = "none";
 
-      const dataUrl = await htmlToImage.toPng(stage, {
+      const blob = await htmlToImage.toBlob(stage, {
         canvasWidth: CANVAS_W,
         canvasHeight: CANVAS_H,
         backgroundColor: "#0b0f1d",
@@ -2176,13 +1103,8 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
         style: { transform: "none" }
       });
 
-      // On mobile we need to append the anchor to the DOM for download to work
-      const a = document.createElement("a");
-      a.download = `azeron_${profile}_ui.png`;
-      a.href = dataUrl;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      // Trigger download using a blob for better mobile support
+      downloadBlob(blob, `azeron_${profile}_ui.png`);
     } catch (err) {
       console.error(err);
       alert("UI export failed. Ensure images are same-origin or data URLs.");
@@ -2268,134 +1190,12 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
 
   return (
     <div className="pageRoot">
+      {/* Header */}
       <header className="header">
-        {/* Settings button on the left for mobile */}
-        {isMobile && (
-          <button
-            className="settingsButton"
-            onClick={() => setShowMobileSettings(true)}
-            aria-label="Settings"
-          onMouseDown={(e) => e.stopPropagation()}
-          >
-            <SettingsIcon size={20} />
-          </button>
-        )}
-        {/* Center brand within a flex wrapper */}
-        <div className="brandWrap">
-          <img src="/logo.png" alt="Unofficial Azeron Keymap Helper" className="brandLogo" />
-        </div>
-        {/* Multi‑select and edit controls on mobile aligned to the right */}
-        {isMobile && (
-          <div className="mobileMultiControls">
-            <button
-              className={`iconToggle ${multi ? 'on' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setMulti((m) => !m);
-              }}
-              aria-pressed={multi}
-              title="Toggle multi‑select"
-              onMouseDown={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-            >
-              <MultiIcon />
-            </button>
-            {multi && (
-              <button
-                className="iconToggle"
-                title="Edit selected keys"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (selection.length > 0) {
-                    setShowPopover(false);
-                    setMenu(null);
-                    setShowMobileEdit(true);
-                  }
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-              >
-                <EditIcon />
-              </button>
-            )}
-        {/* Save button: toggles a small dropdown menu for saving images (print-friendly or colored UI). Always shown on mobile. */}
-        <div style={{ position: 'relative' }}>
-          <button
-            className={`iconToggle`}
-            title="Save images"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowMobileSaveMenu((v) => !v);
-            }}
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-          >
-            <SaveIcon />
-          </button>
-          {showMobileSaveMenu && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 6px)',
-                right: 0,
-                background: 'rgba(18,23,53,0.96)',
-                border: '1px solid rgba(255,255,255,.10)',
-                borderRadius: 12,
-                boxShadow: '0 12px 28px rgba(0,0,0,.45)',
-                padding: 8,
-                zIndex: 30,
-                minWidth: 200,
-              }}
-              onMouseLeave={!isMobile ? () => setShowMobileSaveMenu(false) : undefined}
-              onClick={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-            >
-              <button
-                className="btn"
-                style={{ width: '100%', marginBottom: 6 }}
-                onClick={async () => {
-                  setShowMobileSaveMenu(false);
-                  await saveImage();
-                }}
-              >
-                Save printer friendly PNG
-              </button>
-              <button
-                className="btn"
-                style={{ width: '100%' }}
-                onClick={async () => {
-                  setShowMobileSaveMenu(false);
-                  await exportUI();
-                }}
-              >
-                Save colored UI PNG
-              </button>
-            </div>
-          )}
-        </div>
-          </div>
-        )}
+        <img src="/logo.png" alt="Unofficial Azeron Keymap Helper" className="brandLogo" />
       </header>
 
-      {/* mobile settings overlay */}
-      {isMobile && showMobileSettings && (
-        <FullScreenSheet ref={settingsRef} open={showMobileSettings} onClose={() => setShowMobileSettings(false)}>
-          <MobileSettingsPanel />
-        </FullScreenSheet>
-      )}
-
-      {/* mobile edit overlay */}
-      {isMobile && showMobileEdit && (
-        <FullScreenSheet ref={editRef} open={showMobileEdit} onClose={() => setShowMobileEdit(false)}>
-          <MobileEditContent />
-        </FullScreenSheet>
-      )}
-
-      {/* Mobile legend is rendered inside the panel below the header. It is handled
-         elsewhere in the layout to ensure it never overlaps the keys. See the
-         legendBar element in the canvas panel. */}
-      {/* Top controls (desktop only) */}
-      {!isMobile && (
+      {/* Top controls */}
       <div className="topbar">
         <div className="toolbarWrap">
           {/* Bar 1 */}
@@ -2417,18 +1217,11 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
                 setMap(prev => {
                   const next = { ...prev };
                   Object.keys(layout).forEach(id => {
-                    // Skip blank/analog/split keys and group-locked keys
                     if (layout[id].blank || layout[id].analog || layout[id].split) return;
-                    if (prev[id] && prev[id].group) return;
                     next[id] = { ...(next[id] || {}), color: seededRandomColor(id + Date.now()) };
                   });
-                  // Randomize MU and MD if they are not grouped
-                  if (!(prev["MU"] && prev["MU"].group)) {
-                    next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
-                  }
-                  if (!(prev["MD"] && prev["MD"].group)) {
-                    next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
-                  }
+                  next["MU"] = { ...(next["MU"] || {}), color: seededRandomColor("MU" + Date.now()) };
+                  next["MD"] = { ...(next["MD"] || {}), color: seededRandomColor("MD" + Date.now()) };
                   return next;
                 });
               }}
@@ -2540,14 +1333,8 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
                     <FolderIcon />&nbsp; Load Theme JSON
                   </button>
                 </div>
-                {/* Profile management removed in theme menu per user request */}
-
-                {/* Print options removed in theme menu to avoid duplication */}
-
-                {/* Export/import/share removed per user request */}
-
                 <div className="row">
-                  <button className="btn" onClick={(e)=>e.currentTarget.closest(".compactMenu").classList.remove("open")}> 
+                  <button className="btn" onClick={(e)=>e.currentTarget.closest(".compactMenu").classList.remove("open")}>
                     Close
                   </button>
                 </div>
@@ -2612,7 +1399,6 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
 
         </div>
       </div>
-      )}
 
       {/* Mapper */}
       <div className="canvasWrap" ref={containerRef}>
@@ -2620,26 +1406,6 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
           className="panel"
           style={{ position:"relative" }}
         >
-          {/* Mobile legend bar: when groups are defined on mobile, show a horizontal legend
-              banner across the top of the stage area. This sits below the header and
-              above the map so it never overlaps keys. */}
-          {isMobile && groupLegend.length > 0 && (
-            <div className="legendBar">
-              <div className="legendTitle" style={{ marginRight: 8 }}>Groups</div>
-              <div className="legendRow">
-                {groupLegend.map(([g, cols]) => {
-                  const color = cols.length ? cols[0] : '#888';
-                  return (
-                    <div key={g} className="legendItem">
-                      <div className="legendDot" style={{ background: color }} />
-                      <div className="legendText">{g}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {/* Grid */}
           {showGrid && (
             <div
@@ -2654,6 +1420,25 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
                 zIndex:0
               }}
             />
+          )}
+
+          {/* Legend bar: show across the top of the stage area. If there are
+              one or more groups defined, render a horizontal banner that
+              displays each group name with a colour dot. This element
+              appears above the stage and pushes the key layout down slightly,
+              ensuring that it never overlaps the keys. */}
+          {groupLegend.length > 0 && (
+            <div className="legendBar">
+              <div className="legendTitle">Groups</div>
+              <div className="legendRow">
+                {groupLegend.map(([g, cols]) => (
+                  <div key={g} className="legendItem">
+                    <span className="legendDot" style={{ background: cols && cols.length ? cols[0] : '#888' }} />
+                    <span className="legendText">{g}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           <div
@@ -2728,8 +1513,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
           key={id}
           id={id}
           data={{ ...map[id], color: colorFor(id) }}
-          x={pos.x}
-          y={pos.y}
+          x={pos.x} y={pos.y}
           gloss={gloss}
           showNumbers={showNumbers}
           selected={selection.includes(id)}
@@ -2737,8 +1521,8 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
           draggable={!locked}
           zoom={displayZoom}
           onPick={onPick}
-          onDrag={(ids, nx, ny) => dragTo(ids, nx, ny)}
-          onContext={(e) => openMenu(e, id)}
+          onDrag={(ids,nx,ny)=>dragTo(ids,nx,ny)}
+          onContext={(e)=>openMenu(e,id)}
         />
       );
     })}
@@ -2780,16 +1564,6 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
           <div className="row">
             <label>Sub</label>
             <input className="input" value={active.sub||""} onChange={e=>setField("sub", e.target.value)} />
-          </div>
-
-          {/* Group field for assigning a zone/group to this key. Only shown on desktop (mobile uses quick group assignment). */}
-          <div className="row">
-            <label>Group</label>
-            <input
-              className="input"
-              value={active.group || ''}
-              onChange={e => setField('group', e.target.value)}
-            />
           </div>
 
           <div className="row">
@@ -2851,8 +1625,6 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
               className="colorPicker"
               value={normalizeHex(active.color||BASE.blue)}
               onChange={e=>setField("color", e.target.value)}
-              /* enlarge swatch for better visibility */
-              style={{ width: 72, height: 42, padding: 2, borderRadius: 8, border: '2px solid #e7e9f6', background: '#fff' }}
             />
             <label
               htmlFor="img-upload"
@@ -2877,26 +1649,16 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
 
           <div className="row">
             <label>Image Mode</label>
-            <div style={{ display:"flex", gap:8, width:"100%" }}>
-              <button
-                className={`btn ${active.imageMode!=="cover"?"primary":""}`}
-                onClick={()=>setField("imageMode","icon")}
-                style={{ flex: 1 }}
-              >Icon</button>
-              <button
-                className={`btn ${active.imageMode==="cover"?"primary":""}`}
-                onClick={()=>setField("imageMode","cover")}
-                style={{ flex: 1 }}
-              >Cover</button>
+            <div style={{ display:"flex", gap:8 }}>
+              <button className={`btn ${active.imageMode!=="cover"?"primary":""}`} onClick={()=>setField("imageMode","icon")}>Icon</button>
+              <button className={`btn ${active.imageMode==="cover"?"primary":""}`} onClick={()=>setField("imageMode","cover")}>Cover</button>
             </div>
           </div>
-          {/* Show clear image only if an image is currently assigned */}
-          {active?.image && (
-            <div className="row">
-              <label>Clear Image</label>
-              <button className="btn" onClick={()=>{ setField("image", null); setField("imageMode","icon"); }}>Remove</button>
-            </div>
-          )}
+
+          <div className="row">
+            <label>Clear Image</label>
+            <button className="btn" onClick={()=>{ setField("image", null); setField("imageMode","icon"); }}>Remove</button>
+          </div>
         </div>
       </div>
     )}
@@ -2913,7 +1675,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
         <button className="btn" onClick={() => doPaste({emoji:true})}>Paste Emoji</button>
         <button className="btn" onClick={() => doPaste({color:true})}>Paste Color</button>
         <button className="btn" onClick={() => doPaste({image:true})}>Paste Image</button>
-        <button className="btn primary" onClick={() => doPaste({label:true,sub:true,emoji:true,color:true,image:true,group:true})}>Paste All</button>
+        <button className="btn primary" onClick={() => doPaste({label:true,sub:true,emoji:true,color:true,image:true})}>Paste All</button>
         <button className="btn" onClick={() => setMenu(null)}>Close</button>
       </div>
     </BottomSheet>
@@ -2951,7 +1713,7 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
       </div>
       <div style={{ display:"flex", justifyContent:"flex-end", gap:6, marginTop:6 }}>
         <button className="btn" onClick={()=>setMenu(null)} style={{ padding:"4px 8px", fontSize:12 }}>Close</button>
-        <button className="btn" onClick={()=>doPaste({label:true,sub:true,emoji:true,color:true,image:true,group:true})} style={{ padding:"4px 8px", fontSize:12 }}>Paste All</button>
+        <button className="btn" onClick={()=>doPaste({label:true,sub:true,emoji:true,color:true,image:true})} style={{ padding:"4px 8px", fontSize:12 }}>Paste All</button>
       </div>
     </div>,
     document.body
@@ -2960,31 +1722,11 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
 
 
     <canvas ref={canvasRef} style={{ display:"none" }} />
-
-    {/* Group legend overlay */}
-    {groupLegend.length > 0 && (
-      isMobile
-        ? null /* mobile legend will render above the stage */
-        : (stageBoxRef.current && createPortal(
-            <div className="legendUI" style={{ left: 'auto', right: 12, top: 'auto', bottom: 12 }}>
-              <div className="legendTitle">Groups</div>
-              {groupLegend.map(([g, cols]) => {
-                const color = cols.length ? cols[0] : '#888';
-                return (
-                  <div key={g} className="legendItem">
-                    <div className="legendDot" style={{ background: color }} />
-                    <div className="legendText">{g}</div>
-                  </div>
-                );
-              })}
-            </div>, stageBoxRef.current)
-          )
-    )}
   </div>
 </div>
 
-</div>
-</div>
+</div> {/* end .panel */}
+</div> {/* end .canvasWrap */}
 
       {/* Footer links and disclaimer */}
       <footer className="footer">
@@ -3004,20 +1746,9 @@ const stageW = CANVAS_W * displayZoom, stageH = CANVAS_H * displayZoom;
    Key component
    ========================= */
 function KeyTile({
-  id,
-  data,
-  x,
-  y,
-  selected,
-  selection,
-  gloss,
-  showNumbers,
-  draggable,
-  zoom,
-  onPick,
-  onDrag,
-  onContext,
-}) {
+  id, data, x, y, selected, selection, gloss, showNumbers,
+  draggable, zoom, onPick, onDrag, onContext
+}){
   const ref = useRef(null);
 
   useEffect(()=>{ if(!draggable) return; const el=ref.current; if(!el) return;
@@ -3054,16 +1785,10 @@ function KeyTile({
   return (
     <div
       ref={ref}
-      className={`key ${gloss ? 'gloss' : ''} ${selected ? 'selected' : ''}`}
+      className={`key ${gloss?'gloss':''} ${selected?'selected':''}`}
       style={mergedStyle}
-      // Use pointer events to select keys on both mobile and desktop. Only respond to
-      // primary pointer (mouse or touch).
-      onPointerDown={(e) => {
-        if (e.button === 0 || e.pointerType === 'touch') {
-          onPick(id, e);
-        }
-      }}
-      onContextMenu={(e) => onContext?.(e, id)}
+      onMouseDown={(e)=>onPick(id,e)}
+      onContextMenu={(e)=>onContext?.(e, id)}
       title={`Key ${id}`}
     >
       {data?.image && data?.imageMode === "cover" && (
