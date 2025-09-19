@@ -1,0 +1,692 @@
+/* ==========================================================================
+   Azeron Key Mapper — Stylesheet (v7.7 "middle ground")
+   - Desktop: same look as current
+   - Mobile: smaller than your latest (but bigger than old), 40px targets
+   ========================================================================== */
+
+:root{
+  --bg: #0b0d12;
+  --bg-2: #0e1326;
+  --bg-3: #0a0f21;
+
+  --panel: #0e1224;
+  --panel-2: #0c1122;
+  --panel-3: #0c1022;
+
+  --text: #e9efff;
+  --muted: #9aa4c0;
+
+  --accent: #79a0ff;
+  --accent-2: #8a6bff;
+
+  --ring: rgba(138,107,255,0.35);
+  --ring-strong: rgba(122,160,255,1);
+  --ring-glow: rgba(122,160,255,.55);
+  --ring-soft: rgba(138,107,255,0.18);
+  --shadow: 0 12px 45px rgba(0,0,0,0.55);
+  --glass: 0 20px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06) inset;
+
+  --topbar-total-h: 96px;
+  --legend-w: 240px;
+  --radius: 12px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* === Global scale ====================================================== */
+*{ box-sizing:border-box; }
+html,body,#root{ height:100%; background:var(--bg); color:var(--text); }
+
+/* Responsive type:
+   - Smaller on wide desktop
+   - Comfortable on phones
+*/
+html{
+  font-size: clamp(14px, 0.95vw + 8px, 18px);
+  -webkit-text-size-adjust: 100%;
+}
+
+body{ margin:0; font: 500 14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+a{ color:var(--accent); text-decoration:none; }
+img{ max-width:100%; display:block; }
+.muted{ color:var(--muted); }
+.no-select{ -webkit-user-select:none; user-select:none; }
+
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-thumb{ background:#1a2141; border:2px solid transparent; background-clip:content-box; border-radius:999px; }
+
+/* ----------------------------- Top bar --------------------------------- */
+.topbarWrap{
+  position:sticky; top:0; z-index:40;
+  background: linear-gradient(180deg, rgba(12,14,24,.98), rgba(12,14,24,.86));
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 24px rgba(0,0,0,.35);
+  padding-top: var(--safe-top);
+}
+
+.toolbar{
+  position:relative;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; padding:10px 12px;
+  background: linear-gradient(180deg, #161b33, #10162c);
+  border-bottom:1px solid var(--ring);
+}
+.toolbarLeft{ display:flex; align-items:center; gap:10px; }
+.app-logo{ height:48px; width:auto; object-fit:contain; display:block; }
+.app-logo.placeholder{
+  width:140px; height:48px;
+  background: linear-gradient(180deg, #1b2042, #141936);
+  border:1px solid var(--ring); border-radius:12px;
+  box-shadow: var(--glass);
+}
+.toolbar--absCenter .toolbarCenterAbs{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  display:flex; align-items:center; gap:8px; min-width:0;
+}
+.toolbarRight{ display:flex; align-items:center; gap:8px; }
+
+/* Secondary bar for desktop; hidden on mobile below */
+.controlsStrip{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:8px 12px;
+  background: linear-gradient(180deg, #131939, #0f1530);
+  border-bottom:1px solid var(--ring);
+}
+.controlsCenter{ display:inline-flex; align-items:center; gap:8px; }
+
+/* Mobile header (hamburger + title + action icons). Without explicit
+   flex styling, the elements wrap onto multiple lines on narrow screens. */
+.mobileHeader{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  /* ensure the row doesn't wrap */
+  flex-wrap: nowrap;
+}
+.mobileHeader .titleInput{
+  flex:1 1 auto;
+  min-width:0;
+}
+
+/* ----------------------------- Controls -------------------------------- */
+.btn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 10px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #2b305c, #1a1e41);
+  border:1px solid var(--ring);
+  color:var(--text); cursor:pointer;
+  box-shadow: var(--glass);
+  transition: filter .12s ease, transform .05s ease;
+  touch-action: manipulation;
+  line-height: 1.1;
+}
+.btn:hover{ filter:brightness(1.06); }
+.btn:active{ transform:translateY(1px); }
+.btn.mini{ padding:5px 8px; min-width:28px; height:28px; border-radius:10px; }
+
+.input{
+  width:100%; padding:8px 10px; border-radius:10px;
+  background: linear-gradient(180deg, #1b2042, #141936);
+  border:1px solid var(--ring); color:var(--text);
+  outline:none; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+}
+.input:focus{ border-color:var(--accent-2); box-shadow:0 0 0 3px rgba(138,107,255,.22); }
+.title-input{ font-weight:700; max-width:420px; }
+
+/* Small, balanced icon buttons for desktop */
+.iconbtn{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:32px; height:32px; border-radius:10px;
+  background: linear-gradient(180deg, #2b305c, #1a1e41);
+  border:1px solid var(--ring); color:#fff; font-size:14px;
+  box-shadow: var(--glass); cursor:pointer;
+}
+
+/* Dropdowns */
+.dropdown{ position:relative; }
+.dropdown .chev{ margin-left:6px; opacity:.85; }
+.dropdown-menu{
+  position:absolute; top: calc(100% + 8px); left:0;
+  min-width:220px; max-height:60vh; overflow:auto;
+  padding:8px; display:flex; flex-direction:column; gap:6px;
+  background: rgba(14,18,40,.95);
+  border:1px solid var(--ring);
+  border-radius:12px; box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+  z-index:50;
+  -webkit-overflow-scrolling: touch;
+}
+.dropdown-menu hr{ width:100%; border:none; height:1px; background:rgba(255,255,255,.06); margin:6px 0; }
+
+/* ----------------------------- Main layout ----------------------------- */
+.appMain{
+  position:relative;
+  height: calc(100dvh - var(--topbar-total-h, 96px));
+  display:grid; grid-template-columns: 1fr minmax(320px, 400px);
+  gap:16px; padding:16px; padding-bottom: calc(16px + var(--safe-bottom));
+}
+.boardWrap{
+  position:relative; overflow:hidden;
+  /* Ensure the canvas wrapper expands to fill its grid cell. Without an
+     intrinsic height/width, absolutely positioned children can cause the
+     container to collapse on mobile. */
+  height: 100%;
+  width: 100%;
+  border:1px solid var(--ring); border-radius:16px;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel-3));
+  box-shadow: var(--shadow);
+}
+.boardWrap::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(to right, transparent 0, transparent 119px, rgba(0,0,0,0.25) 120px),
+    linear-gradient(to bottom, transparent 0, transparent 119px, rgba(0,0,0,0.25) 120px);
+  background-size: 24px 24px, 24px 24px, 120px 120px, 120px 120px;
+  mix-blend-mode: screen;
+}
+.no-grid::before{ display:none !important; }
+
+.inspector{
+  position:relative; height:100%; display:flex; flex-direction:column;
+  border:1px solid var(--ring); border-radius:16px;
+  background: linear-gradient(180deg, rgba(15,17,30,.9), rgba(12,14,24,.92));
+  box-shadow: var(--glass); overflow:hidden;
+}
+.section{ padding:12px; border-bottom:1px solid rgba(255,255,255,.06); }
+.section:last-child{ border-bottom:0; }
+.key-preview{
+  height:160px; border-radius:16px;
+  background: linear-gradient(180deg, #1d2347, #131a38);
+  border:1px solid var(--ring); box-shadow: var(--glass);
+}
+.field{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+.field label{ font-size:12px; color:var(--muted); }
+.color-input{ width:100%; height:38px; padding:0; border:none; border-radius:10px; background:transparent; box-shadow: inset 0 0 0 1px var(--ring); }
+
+/* Key tiles */
+.key-tile{
+  position:absolute;
+  border-radius:18px;
+  color:var(--text); display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center; padding:10px; cursor:pointer;
+  transition: box-shadow .12s ease, transform .05s ease;
+}
+.key-tile .label{ font-weight:700; color:#fff; text-shadow:0 1px 0 rgba(0,0,0,.45); word-break:break-word; line-height:1.1; }
+.key-tile .subtitle{ font-size:12px; opacity:.9; margin-top:4px; word-break:break-word; }
+
+/* Selection ring */
+.key-tile[data-selected="true"]::after{
+  content:"";
+  position:absolute; inset:-3px; border-radius:21px; pointer-events:none;
+  box-shadow: 0 0 0 2px var(--ring-strong), 0 0 24px var(--ring-glow);
+}
+
+/* number pill */
+.num-pill{
+  position:absolute; top:6px; left:6px;
+  padding:3px 8px; border-radius:999px; font-size:13px; line-height:1;
+  background: #000; color:#fff;
+  box-shadow: 0 0 12px rgba(122,160,255,.25), inset 0 0 0 1px rgba(255,255,255,.2);
+}
+/* Never select text inside tiles or the analog */
+.key-tile, .key-tile *,
+.analog, .analog * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* While dragging (we toggle this class from JS), disable all selection */
+.dragging, .dragging * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  cursor: grabbing !important;
+}
+/* --- RPG Awesome integration helpers --- */
+.key-tile img { z-index: 0; }
+.key-tile i.ra {
+  position: relative;
+  z-index: 1;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,.45);
+}
+/* key label (live): single line + ellipsis, no mid-word wrap */
+.key-tile .label{
+  display:block;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
+}
+
+/* ---------------- Legend & Zoom cluster (board overlay) ---------------- */
+.zone-legend{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+  padding:6px 8px; border-radius:999px;
+  border:1px solid rgba(42,54,84,.9);
+  background:rgba(17,24,39,.8);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 0 1px #202a44, 0 12px 24px #0006;
+}
+
+.overlay-tr-cluster{
+  position:absolute; top:8px; right:8px; z-index:6;
+  display:flex; align-items:flex-start; gap:8px;
+  pointer-events:none;
+}
+.overlay-tr-cluster > *{ pointer-events:auto; }
+
+/* Zoom HUD chip */
+.zoom-hud-chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 8px; border-radius:999px;
+  border:1px solid rgba(42,54,84,.9);
+  background:rgba(17,24,39,.8);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 0 1px #202a44, 0 12px 24px #0006;
+  font-size:12px;
+}
+.zoom-hud-chip .btn.mini{ height:26px; min-width:26px; padding:3px 6px; }
+
+/* Ensure analog stick interactions don’t propagate scroll/pan on touch */
+.analog-stick{ touch-action: none; }
+
+/* ------------------------------ Zoom HUD (legacy) ---------------------- */
+.zoomHud{
+  position:absolute; right:16px; bottom:16px;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 8px; font-size:12px;
+  background: rgba(12,16,32,.78);
+  border:1px solid var(--ring); border-radius:12px;
+  box-shadow: var(--glass); backdrop-filter: blur(8px); z-index:3;
+}
+.zoomHud > div{ min-width:48px; text-align:center; opacity:.9; }
+
+/* ---------- Inspector-wide overlays (Emoji & Icon pickers) ------------- */
+.panelOverlay{
+  position:absolute; inset:8px; z-index:60;
+  display:flex; flex-direction:column;
+  background:rgba(8,10,20,.7);
+  border:1px solid var(--ring); border-radius:16px;
+  box-shadow: var(--shadow); backdrop-filter: blur(6px);
+}
+.panelOverlayInner{
+  position:relative; flex:1; overflow:auto;
+  background:linear-gradient(180deg, #151a34, #0f132a);
+  border-radius:14px; padding:0;
+  display:flex; flex-direction:column;
+  width:100%;
+}
+.panelOverlayFooter{
+  position:absolute; left:8px; right:8px; bottom:8px;
+  padding:8px;
+  background: linear-gradient(180deg, rgba(15,17,40,0), rgba(15,17,40,.85) 45%, rgba(15,17,40,.95));
+  border:1px solid var(--ring);
+  border-radius:12px; box-shadow: var(--glass);
+}
+.overlayClose{ display:none !important; }
+
+/* Emoji Picker React sizing & theme */
+.panelOverlayInner .EmojiPickerReact{
+  width:100% !important;
+  max-width:none !important;
+  align-self:stretch !important;
+  background:transparent !important;
+  border:0 !important;
+}
+.panelOverlayInner .EmojiPickerReact .epr-body,
+.panelOverlayInner .EmojiPickerReact .epr-emoji-category-content,
+.panelOverlayInner .EmojiPickerReact .epr-grid{
+  width:100% !important;
+}
+.panelOverlayInner .EmojiPickerReact .epr-search-container{ position:sticky; top:0; z-index:2; }
+.panelOverlayInner .EmojiPickerReact .epr-category-nav{ position:sticky; top:42px; z-index:2; }
+.panelOverlayInner .EmojiPickerReact .epr-body{ max-height:none !important; }
+
+.panelOverlayInner .EmojiPickerReact {
+  --epr-bg-color: var(--bg-2);
+  --epr-category-label-bg-color: transparent;
+  --epr-category-label-text-color: var(--muted);
+  --epr-text-color: var(--text);
+  --epr-search-border-color: var(--accent-2);
+  --epr-highlight-color: var(--accent);
+  --epr-hover-bg-color: rgba(122,160,255,0.15);
+  --epr-focus-bg-color: rgba(138,107,255,0.25);
+  --epr-selected-bg-color: var(--accent-2);
+  --epr-selected-text-color: #fff;
+  --epr-category-icon-active-color: var(--accent);
+  --epr-category-icon-inactive-color: var(--muted);
+  --epr-emoji-size: 24px;
+}
+.panelOverlayInner .EmojiPickerReact .epr-emoji {
+  filter: drop-shadow(0 1px 2px rgba(122,160,255,0.35));
+}
+
+/* ----------------------------- Mobile UI --------------------------------
+   MIDDLE-GROUND SCALE (smaller than v7.6, bigger than v7.3)
+---------------------------------------------------------------------------*/
+@media (max-width: 480px){
+  /* Base type slightly reduced from current */
+  html{ font-size: 15px; }
+
+  /* Buttons & inputs: tighter but comfy */
+  .btn{ padding:10px 12px; }
+  .btn.mini{ height:30px; min-width:30px; padding:5px 8px; border-radius:11px; }
+  .input{ padding:10px 12px; border-radius:11px; }
+
+  /* Min tap targets ~40px (vs 44px before) */
+  button, .btn, [role="button"], .iconbtn, input[type="checkbox"]{
+    min-height: 40px; min-width: 40px;
+  }
+
+  /* Icon buttons scale down a touch */
+  .iconbtn{ width:40px; height:40px; font-size:15px; border-radius:11px; }
+
+  /* Layout: single column, a bit tighter paddings */
+  .appMain{ grid-template-columns:1fr; padding:12px; padding-bottom: calc(12px + var(--safe-bottom)); }
+
+  /* Hide desktop-only chrome */
+  .inspector{ display:none; }
+  .toolbar--absCenter .toolbarCenterAbs{ display:none; }
+  .controlsStrip{ display:none; }
+
+  /* Sheet & drawer spacing slightly tighter */
+  .drawer .group{ gap:6px; margin-bottom:10px; }
+  .row{ gap:6px; }
+
+  /* Make mobile drawer toggles occupy full width and align content to the left. */
+  .drawer .group .btn.mini{
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* Dropdowns: a bit narrower to reduce accidental wraps */
+  .dropdown-menu{ min-width:200px; z-index: 12000; }
+
+  /* Zoom HUD chip buttons: pocket-sized but usable */
+  .zoom-hud-chip .btn.mini{ height:24px; min-width:24px; padding:3px 6px; }
+
+  /* Panels/sections: trim padding a touch */
+  .section{ padding:10px; }
+}
+
+/* On larger phones and tablets, slightly increase tap targets and base
+   sizing so the UI doesn’t feel tiny.  This rule applies between
+   481px and 1024px widths and complements the mobile tweaks above. */
+@media (max-width: 1024px) and (min-width: 481px) {
+  /* Increase base font size for readability on larger phones */
+  html{ font-size: clamp(15px, 1vw + 8px, 20px); }
+
+  /* Ensure comfortable tap targets (at least ~48px) */
+  button,
+  .btn,
+  [role="button"],
+  .iconbtn,
+  input[type="checkbox"] {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Enlarge buttons and adjust padding */
+  .btn {
+    padding: 12px 18px;
+    font-size: 1rem;
+  }
+
+  /* Compact variant still large enough for touch */
+  .btn.mini {
+    height: 36px;
+    min-width: 36px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+  }
+
+  /* Inputs get more padding and smoother corners */
+  .input {
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 1rem;
+  }
+
+  /* Icon buttons scale up proportionally */
+  .iconbtn {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+    border-radius: 12px;
+  }
+}
+
+/* Hide the side inspector and force a single-column layout on tablets and mobile.
+   The 1024px breakpoint accommodates larger phones (e.g. Galaxy S24 Ultra) and
+   tablets. When the viewport width falls below this threshold, the inspector
+   column collapses and the board spans the full width of the page. */
+@media (max-width: 1024px) {
+  .appMain{ grid-template-columns:1fr; }
+  .inspector{ display:none; }
+}
+
+/*
+ * Mobile Inspector bottom sheet
+ *
+ * When viewing on mobile or tablet, the inspector appears as a
+ * bottom-docked sheet that slides up when opened. It uses a
+ * translation transform to animate between hidden and visible
+ * positions and reserves space at the bottom for system gestures.
+ */
+.mobiInspWrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Limit height so some of the board remains visible when the sheet opens */
+  max-height: 75vh;
+  background: #0d1323;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.3s ease-in-out;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 10000;
+  /* Account for safe area at the bottom (e.g., iPhone home indicator) */
+  padding-bottom: var(--safe-bottom);
+}
+
+/* When the inspector is open, slide it fully into view */
+.mobiInspWrap.open {
+  transform: translateY(0%);
+}
+
+/* Header for the mobile inspector: sticky so actions remain visible when
+   scrolling. The flex layout separates the close button, title chips,
+   and navigation arrows. */
+.mobiInspHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, #0f1630 0%, rgba(15,22,48,0.85) 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Title area inside the inspector header: grows to fill available space */
+.mobiInspTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Navigation buttons container */
+.navBtns {
+  display: flex;
+  gap: 8px;
+}
+
+/* Scrollable body of the inspector */
+.mobiInspBody {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  display: grid;
+  grid-auto-rows: min-content;
+  gap: 6px;
+  padding: 8px 10px 10px;
+}
+
+/* ------------------------------ Export modes --------------------------- */
+.export-ui .zoomHud,
+.export-print .zoomHud,
+.export-transparent .zoomHud{ display:none !important; }
+.export-ui .boardWrap::before{ display:block; }
+
+/* PRINT-SAFE MODE */
+.export-print body{ background:#ffffff !important; color:#000000 !important; }
+.export-print .boardWrap{
+  background:#ffffff !important; box-shadow:none; border:1px solid #00000020;
+}
+.export-print .boardWrap::before{ display:none !important; }
+.export-print .inspector,
+.export-print .key-preview,
+.export-print .section{
+  background:#ffffff !important; border-color:#00000020 !important; color:#000000 !important;
+}
+.export-print .key-tile{
+  background:#ffffff !important; color:#000000 !important; box-shadow: 0 0 0 1px rgba(0,0,0,.12);
+}
+.export-print .label,
+.export-print .subtitle,
+.export-print .num-pill{
+  color:#000000 !important; text-shadow:none !important; background:#ffffff !important; box-shadow:none !important;
+}
+
+/* TRANSPARENT MODE */
+.export-transparent .boardWrap{
+  background:transparent !important; box-shadow:none; border-color:transparent;
+}
+.export-transparent .boardWrap::before{ display:none !important; }
+
+/* ------------------------------- Footer -------------------------------- */
+.appFooter{
+  display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center;
+  padding:12px 16px;
+  color:var(--muted);
+  background: linear-gradient(180deg, rgba(12,14,24,.86), rgba(12,14,24,.94));
+  border-top:1px solid var(--ring);
+}
+.appFooter .footLine{ font-size:12px; text-align:center; }
+.appFooter .footActions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+.appFooter .btn{ padding:8px 12px; border-radius:12px; }
+
+/* ---------- Context menu (right-click) ---------- */
+.context-menu{
+  position: fixed;
+  min-width: 260px;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #141936, #0f1530);
+  border: 1px solid var(--ring);
+  box-shadow: var(--glass);
+  color: var(--text);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+}
+.context-menu .title{
+  font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 2px 2px 6px;
+}
+.context-menu .menu-row{ display: flex; gap: 6px; margin: 6px 0; }
+.context-menu button{
+  flex: 0 0 auto; padding: 8px 10px; border-radius: 12px;
+  background: linear-gradient(180deg, #2b305c, #1a1e41);
+  border: 1px solid var(--ring); color: var(--text);
+  cursor: pointer; box-shadow: var(--glass);
+  transition: filter .12s ease, transform .05s ease;
+}
+.context-menu button:hover{ filter: brightness(1.06); }
+.context-menu button:active{ transform: translateY(1px); }
+.context-menu button[disabled]{ opacity: .45; cursor: not-allowed; filter: none; box-shadow: none; }
+
+/* ---------- Force dark selects everywhere ---------- */
+select,
+select option,
+select optgroup{
+  background: linear-gradient(180deg, #1b2042, #141936);
+  color: var(--text);
+}
+
+/* -------------------------- Mobile Inspector chips -------------------------- */
+/* Bulk-apply chip bar: flexible row with spacing */
+.bulkBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Individual apply chips: rounded pill with subtle border.  When inactive, use a
+   muted background and text colour.  When the element has data-active="true",
+   upgrade to a gradient background and brighter text with a glassy shadow. */
+.applyChip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ring);
+  background: rgba(18, 24, 44, .8);
+  color: #cfe0ff;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+  user-select: none;
+  white-space: nowrap;
+}
+.applyChip[data-active="true"] {
+  background: linear-gradient(180deg, #2b305c, #1a1e41);
+  color: #ffffff;
+  box-shadow: var(--glass);
+}
+select{
+  border: 1px solid var(--ring);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font: inherit;
+  box-shadow: var(--glass);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color-scheme: dark;
+  position: relative;
+}
+select:focus{
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(138,107,255,.22);
+  outline: none;
+}
+select::-ms-expand{ display:none; }
+.select-wrap{ position: relative; display:inline-block; width:100%; }
+.select-wrap select{ width:100%; padding-right:28px; }
+.select-wrap::after{
+  content:"▾";
+  position:absolute;
+  right:10px; top:50%;
+  transform:translateY(-50%);
+  pointer-events:none;
+  color:var(--muted);
+  font-size:12px;
+}
+
