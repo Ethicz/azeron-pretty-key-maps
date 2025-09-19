@@ -283,7 +283,30 @@ export default function MobileInspector() {
     ? active.label
     : PLACEHOLDERS[(selectedIndex >= 0 ? selectedIndex : 0) % PLACEHOLDERS.length];
 
-  /* --- Body ref and scroll-to-top helper --- */
+  /* --- inline styles --- */
+  const wrapStyle = {
+    position:'fixed', left:0, right:0, top: topbarH, bottom:0,
+    display:'flex', flexDirection:'column',
+    background:'#0d1323', zIndex:100
+  };
+  const headerStyle = {
+    position:'sticky', top:0, zIndex:2,
+    padding:'8px 10px',
+    background:'linear-gradient(180deg, #0f1630 0%, rgba(15,22,48,0.85) 100%)',
+    borderBottom:'1px solid rgba(255,255,255,0.08)',
+    display:'flex', alignItems:'center', justifyContent:'space-between', gap:8
+  };
+  const bodyStyle = {
+    flex: 1,
+    overflow: 'auto',                 // enable vertical scroll
+    WebkitOverflowScrolling: 'touch', // iOS momentum scroll
+    overscrollBehavior: 'contain',    // don’t rubber-band-close the panel
+    display: 'grid',
+    gridAutoRows: 'min-content',
+    gap: 6,
+    padding: '8px 10px 10px'
+  };
+
   // Ref for the scrollable body. Needed to scroll back to the top from a
   // floating button. See scrollToTop().
   const bodyRef = useRef(null);
@@ -298,13 +321,14 @@ export default function MobileInspector() {
 
   return (
     <div
-      className={`mobiInspWrap${open ? ' open' : ''}`}
+      className={`mobiInspWrap ${open ? 'open' : ''}`}
+      style={wrapStyle}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      <div className="mobiInspHeader">
+      <div className="mobiInspHeader" style={headerStyle}>
         <button className="btn mini" onClick={close}>Close</button>
-        <div className="mobiInspTitle">
+        <div style={{display:'flex', alignItems:'center', gap:8, minWidth:0}}>
           {active && showNumbers && active.num != null && (
             <span className="applyChip" data-active="true">#{active.num}</span>
           )}
@@ -312,13 +336,13 @@ export default function MobileInspector() {
             {(active ? (active.label || displayLabel) : 'Key').slice(0,18)}
           </div>
         </div>
-        <div className="navBtns">
+        <div className="navBtns" style={{display:'flex', gap:8}}>
           <button className="iconbtn" aria-label="Prev" onClick={goLeft}>‹</button>
           <button className="iconbtn" aria-label="Next" onClick={goRight}>›</button>
         </div>
       </div>
 
-      <div className="mobiInspBody" ref={bodyRef}>
+      <div className="mobiInspBody" style={bodyStyle} ref={bodyRef}>
         {!active ? (
           <div className="muted">Select a key…</div>
         ) : (

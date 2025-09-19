@@ -128,20 +128,14 @@ const BoardCanvas = forwardRef(function BoardCanvas(_, ref) {
   // ---------- Context menu state (x,y,+ optional key focus) ----------
   const [ctx, setCtx] = useState(null); // { x, y, keyId?: string|null }
 
-  // Determine if we are in a narrow viewport. Use the same breakpoint as
-  // App.jsx (1024px) so layout calculations and responsive styles stay in
-  // sync across the entire application. This hook listens for viewport
-  // changes and updates the flag accordingly. Using a higher threshold
-  // ensures tablets and large phones get the mobile-centric layout.
   const [isNarrow, setIsNarrow] = useState(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return window.matchMedia('(max-width: 1024px)').matches;
+    return window.matchMedia('(max-width: 820px)').matches;
   });
   useEffect(() => {
     if (!window.matchMedia) return;
-    const mq = window.matchMedia('(max-width: 1024px)');
+    const mq = window.matchMedia('(max-width: 820px)');
     const onChange = (e) => setIsNarrow(e.matches);
-    // Modern browsers support addEventListener; older Safari uses addListener
     mq.addEventListener ? mq.addEventListener('change', onChange) : mq.addListener(onChange);
     setIsNarrow(mq.matches);
     return () => {
