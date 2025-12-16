@@ -26,14 +26,49 @@ export default function AnalogStick({ x, y }) {
   const label = (data.label || 'Analog Stick').trim();
   const showGloss = !!s.showGloss;
 
-  // directional labels from store
+  // directional labels/bindings from store
   const dnRaw = s.analogNames || {};
   const dn = {
-    up: (dnRaw.up || 'Up'),
-    right: (dnRaw.right || 'Right'),
-    down: (dnRaw.down || 'Down'),
-    left: (dnRaw.left || 'Left'),
+    up: (dnRaw.up || 'W'),
+    right: (dnRaw.right || 'D'),
+    down: (dnRaw.down || 'S'),
+    left: (dnRaw.left || 'A'),
   };
+
+  // Read pressed keys for keyboard-driven analog input
+  const pressedKeys = s.pressedKeys || new Set();
+
+  // Calculate keyboard-driven axis values based on pressed direction keys
+  const keyboardAxes = useMemo(() => {
+    if (!pressedKeys || pressedKeys.size === 0) return null;
+
+    let x = 0, y = 0;
+
+    // Check each direction (case insensitive)
+    const isPressed = (binding) => {
+      const normalized = (binding || '').trim().toUpperCase();
+      if (!normalized) return false;
+      for (const key of pressedKeys) {
+        if (key.toUpperCase() === normalized) return true;
+      }
+      return false;
+    };
+
+    if (isPressed(dn.up))    y -= 1;
+    if (isPressed(dn.down))  y += 1;
+    if (isPressed(dn.left))  x -= 1;
+    if (isPressed(dn.right)) x += 1;
+
+    // Normalize diagonal movement to unit circle
+    if (x !== 0 && y !== 0) {
+      const len = Math.hypot(x, y);
+      x = x / len;
+      y = y / len;
+    }
+
+    if (x === 0 && y === 0) return null;
+    return { x, y };
+  }, [pressedKeys, dn.up, dn.down, dn.left, dn.right]);
 
   // layout
   const W = 240, H = 280;
@@ -103,7 +138,9 @@ export default function AnalogStick({ x, y }) {
 
   // deadzone
   const DZ = 0.12;
-  const normAxes = normalizeWithDeadzone(liveAxesRaw ?? drag, DZ) || { x: 0, y: 0 };
+  // Priority: live gamepad axes > keyboard input > mouse drag
+  const activeAxes = liveAxesRaw ?? keyboardAxes ?? drag;
+  const normAxes = normalizeWithDeadzone(activeAxes, DZ) || { x: 0, y: 0 };
   const ax = normAxes.x;
   const ay = normAxes.y;
 

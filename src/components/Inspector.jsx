@@ -189,12 +189,67 @@ export default function Inspector() {
     return () => document.removeEventListener('pointerdown', onDoc);
   }, []);
 
+  // Analog stick direction bindings
+  const analogNames = s.analogNames || { up: 'W', left: 'A', down: 'S', right: 'D' };
+
+  const updateAnalogBinding = (dir, value) => {
+    useStore.setState({
+      analogNames: { ...analogNames, [dir]: value }
+    });
+  };
+
   if (!active) {
     return (
       <div ref={panelRef} className="inspectorWrap" style={{ padding: 10 }}>
         <div className="section">
           <h3 className="muted" style={{ margin: '6px 0' }}>Key preview</h3>
           <div className="key-preview center"><span className="muted">Select a key</span></div>
+        </div>
+
+        {/* Analog Stick Direction Bindings */}
+        <div className="section" style={{ paddingTop: 6 }}>
+          <h3 style={{ margin: '6px 0' }}>Analog Stick Bindings</h3>
+          <p className="muted" style={{ fontSize: 12, marginBottom: 10 }}>
+            Set the keyboard keys for analog stick directions. Press these keys to move the stick.
+          </p>
+          <div className="grid2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div className="field">
+              <label>Up</label>
+              <input
+                className="input"
+                value={analogNames.up}
+                placeholder="W"
+                onChange={(e) => updateAnalogBinding('up', e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label>Down</label>
+              <input
+                className="input"
+                value={analogNames.down}
+                placeholder="S"
+                onChange={(e) => updateAnalogBinding('down', e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label>Left</label>
+              <input
+                className="input"
+                value={analogNames.left}
+                placeholder="A"
+                onChange={(e) => updateAnalogBinding('left', e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label>Right</label>
+              <input
+                className="input"
+                value={analogNames.right}
+                placeholder="D"
+                onChange={(e) => updateAnalogBinding('right', e.target.value)}
+              />
+            </div>
+          </div>
         </div>
       </div>
     );
