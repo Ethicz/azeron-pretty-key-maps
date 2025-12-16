@@ -10,12 +10,14 @@
     "clean": "rm -rf node_modules .vite dist package-lock.json"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.88.0",
     "emoji-picker-react": "^4.13.3",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^7.10.1",
     "rpg-awesome": "^0.2.0",
     "zustand": "^4.5.2"
   },

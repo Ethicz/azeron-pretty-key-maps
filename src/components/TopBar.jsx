@@ -9,6 +9,9 @@ import { downloadPNG } from '../lib/exportImage.js';
 import { downloadPDF } from '../lib/exportPdf.js';
 import ProjectSettings from './ProjectSettings.jsx';
 import ExportPage from './ExportPage.jsx';
+import AuthModal from './AuthModal.jsx';
+import OverlayConfigurator from './OverlayConfigurator.jsx';
+import { useAuth } from '../lib/AuthContext.jsx';
 import logo from '../logo.png';
 import { DEFAULT_RAINBOW } from '../lib/constants.js';
 
@@ -54,6 +57,7 @@ async function waitForNode(container, selector, timeoutMs=2000) {
 export default function TopBar({ isMobile=false }) {
   const dispatch = useDispatch();
   const s = useStore();
+  const { user, loading: authLoading } = useAuth();
 
   const {
     device='cyro', themeId=null,
@@ -65,6 +69,10 @@ export default function TopBar({ isMobile=false }) {
 
   const barRef = useRef(null);
   const row2Ref = useRef(null);
+
+  // Auth and overlay modal states
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+  const [isOverlayConfigOpen, setOverlayConfigOpen] = useState(false);
 
   useEffect(() => {
     const update = () => {
@@ -526,6 +534,18 @@ export default function TopBar({ isMobile=false }) {
           <button className="iconbtn" aria-label="Save / Export" title="Save / Export" onClick={toggleSave}>
             <SvgSave />
           </button>
+          <button className="iconbtn" aria-label="OBS Overlay" title="OBS Overlay" onClick={() => setOverlayConfigOpen(true)}>
+            <SvgBroadcast />
+          </button>
+          <button
+            className="iconbtn"
+            aria-label={user ? 'Account' : 'Sign In'}
+            title={user ? 'Account' : 'Sign In'}
+            onClick={() => setAuthModalOpen(true)}
+            style={user ? { background: 'rgba(106, 168, 255, 0.3)' } : undefined}
+          >
+            <SvgUser />
+          </button>
           <button className="iconbtn" aria-label="Settings" title="Settings" onClick={toggleSettings}>
             <SvgGear />
           </button>
@@ -538,6 +558,10 @@ export default function TopBar({ isMobile=false }) {
         {isSaveOpen && createPortal(SaveExportSheet, document.body)}
         {isSettingsOpen && createPortal(SettingsSheet, document.body)}
         {isHelpOpen && createPortal(HelpSheet, document.body)}
+
+        {/* Auth and Overlay modals */}
+        <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
+        <OverlayConfigurator isOpen={isOverlayConfigOpen} onClose={() => setOverlayConfigOpen(false)} />
       </div>
     );
   }
@@ -644,6 +668,24 @@ export default function TopBar({ isMobile=false }) {
           </button>
           <button
             className="btn mini"
+            onClick={() => setOverlayConfigOpen(true)}
+            title="OBS Overlay"
+            aria-label="OBS Overlay"
+          >
+            <SvgBroadcast />
+          </button>
+          <button
+            className="btn mini"
+            onClick={() => setAuthModalOpen(true)}
+            title={user ? 'Account' : 'Sign In'}
+            aria-label={user ? 'Account' : 'Sign In'}
+            style={user ? { background: 'rgba(106, 168, 255, 0.2)' } : undefined}
+          >
+            <SvgUser />
+            {user && <span style={{ marginLeft: 4, fontSize: 10 }}>●</span>}
+          </button>
+          <button
+            className="btn mini"
             onClick={toggleHelp}
             title="Help & Instructions"
             aria-label="Help"
@@ -689,6 +731,10 @@ export default function TopBar({ isMobile=false }) {
 
       {/* Help panel portal (desktop & mobile) */}
       {isHelpOpen && createPortal(HelpSheet, document.body)}
+
+      {/* Auth and Overlay modals */}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
+      <OverlayConfigurator isOpen={isOverlayConfigOpen} onClose={() => setOverlayConfigOpen(false)} />
     </div>
   );
 }
@@ -760,6 +806,22 @@ function SvgQuestion(){
       <circle cx="12" cy="12" r="10" />
       <path d="M9.09 9a3 3 0 1 1 5.82 1c0 2-3 2-3 4" />
       <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+function SvgUser(){
+  return (
+    <svg {...iconProps} aria-hidden="true">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+function SvgBroadcast(){
+  return (
+    <svg {...iconProps} aria-hidden="true">
+      <circle cx="12" cy="12" r="2" />
+      <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14" />
     </svg>
   );
 }

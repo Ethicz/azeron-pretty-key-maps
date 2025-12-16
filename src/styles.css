@@ -665,3 +665,243 @@ select::-ms-expand{ display:none; }
   font-size:12px;
 }
 
+/* ----------------------------- Auth Modal -------------------------------- */
+.modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+.modal-content{
+  position: relative;
+  background: linear-gradient(180deg, #161b33, #10162c);
+  border: 1px solid var(--ring);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--glass);
+}
+.modal-close{
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+.modal-close:hover{ color: var(--text); }
+
+.auth-modal h2{
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.auth-discord-btn{
+  background: #5865F2 !important;
+  border-color: #5865F2 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-discord-btn:hover{
+  background: #4752C4 !important;
+}
+
+.auth-divider{
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.auth-divider::before,
+.auth-divider::after{
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--ring);
+}
+.auth-divider span{
+  padding: 0 12px;
+}
+
+.auth-error{
+  background: rgba(255,100,100,0.15);
+  border: 1px solid rgba(255,100,100,0.3);
+  color: #ff6b6b;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.auth-success{
+  background: rgba(100,255,150,0.15);
+  border: 1px solid rgba(100,255,150,0.3);
+  color: #6bffb0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.auth-warning{
+  background: rgba(255,200,100,0.15);
+  border: 1px solid rgba(255,200,100,0.3);
+  color: #ffc864;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.auth-toggle{
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.link-btn{
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+.link-btn:hover{ text-decoration: underline; }
+
+.auth-user-info{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.auth-avatar{
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+.auth-username{
+  font-weight: 600;
+  color: var(--text);
+}
+.auth-email{
+  font-size: 12px;
+}
+.auth-actions{
+  margin-top: 16px;
+}
+
+/* ----------------------------- OBS Overlay -------------------------------- */
+.overlay-page{
+  min-height: 100vh;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.overlay-page.has-bg{
+  background: var(--bg);
+}
+
+.overlay-container{
+  position: relative;
+  transform-origin: center center;
+}
+
+.overlay-board{
+  position: relative;
+}
+
+/* Compact overlay mode - smaller keys */
+.overlay-compact .key-tile{
+  transform: scale(0.7);
+  transform-origin: top left;
+}
+
+/* Hide selection/editing UI in overlay */
+.overlay-page .key-tile[data-selected="true"]::after{ display: none; }
+.overlay-page .key-tile{ cursor: default; }
+
+/* ----------------------------- Overlay Configurator -------------------------------- */
+.configurator-page{
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 20px;
+}
+.configurator-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ring);
+}
+.configurator-layout{
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  height: calc(100vh - 120px);
+}
+.configurator-preview{
+  background: repeating-conic-gradient(#222 0% 25%, #333 0% 50%) 50% / 20px 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+.configurator-preview-inner{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.configurator-panel{
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--ring);
+  border-radius: 12px;
+  padding: 16px;
+  overflow-y: auto;
+}
+.configurator-section{
+  margin-bottom: 20px;
+}
+.configurator-section h3{
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.url-display{
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--ring);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 12px;
+  word-break: break-all;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+@media (max-width: 900px) {
+  .configurator-layout{
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .configurator-preview{
+    height: 300px;
+  }
+}
+
