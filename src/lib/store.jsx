@@ -1,8 +1,41 @@
 // src/lib/store.jsx
 import { create } from 'zustand';
+import { MAX_HISTORY, STORAGE_KEY, AUTOSAVE_DEBOUNCE_MS } from './constants.js';
 
 // deep clone for history snapshots
 const snap = (obj) => JSON.parse(JSON.stringify(obj));
+
+// Load saved state from localStorage
+function loadSavedState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return {
+        keyData: parsed.keyData || {},
+        device: parsed.device || 'cyro',
+        gameTitle: parsed.gameTitle || 'Untitled',
+        title: parsed.gameTitle || 'Untitled',
+        themeId: parsed.themeId || null,
+        randomPalette: parsed.randomPalette || null,
+        zones: parsed.zones || {},
+        analogNames: parsed.analogNames || { up: 'W', left: 'A', down: 'S', right: 'D' },
+        showNumbers: parsed.showNumbers ?? true,
+        showGloss: parsed.showGloss ?? true,
+        showLegend: parsed.showLegend ?? true,
+        lock: parsed.lock ?? true,
+        grid: parsed.grid ?? true,
+        invert: parsed.invert ?? false,
+        snap: parsed.snap ?? true,
+      };
+    }
+  } catch (e) {
+    console.warn('Failed to load saved state:', e);
+  }
+  return {};
+}
+
+const savedState = loadSavedState();
 
 const initial = {
   /* ------------ Mobile overlays (explicit defaults) ------------ */
@@ -18,7 +51,6 @@ const initial = {
 
   /* ---------------------- Identity ---------------------- */
   device: 'cyro',
-  // prefer gameTitle; keep legacy "title" around if something reads it
   gameTitle: 'Untitled',
   title: 'Untitled',
 
@@ -27,10 +59,8 @@ const initial = {
   randomPalette: null,
 
   /* ---------------------- Key data ---------------------- */
-  // Newer components (BoardCanvas/Inspector/MobileInspector) use keyData
-  keyData: {}, // id -> { label, subtitle, color, emoji, imageUrl, imageMode, icon, zone, x, y, w, h }
-  // Older actions below keep using "keys"; keep it to avoid breaking undo/redo code paths
-  keys: {},
+  // Single source of truth for key data
+  keyData: {},
 
   zones: {},          // { [zoneName]: string[] ids }
   selection: [],
@@ -64,14 +94,78 @@ const initial = {
   // Whether the help/tutorial panel is open
   isHelpOpen: false,
 
+  // Track if there are unsaved changes (for beforeunload warning)
+  hasUnsavedChanges: false,
+
   /* ---------------------- Special ids ---------------------- */
   mwId: 'MW',         // lets BoardCanvas match id === mwId
   mwUpId: 'MW_UP',
   mwDownId: 'MW_DOWN',
-  analogNames: { up: 'W', left: 'A', down: 'S', right: 'D' }
+  analogNames: { up: 'W', left: 'A', down: 'S', right: 'D' },
+
+  // Merge in any saved state from localStorage
+  ...savedState,
 };
 
 export const useStore = create(() => ({ ...initial }));
+
+// Auto-save to localStorage with debouncing
+let saveTimeout = null;
+useStore.subscribe((state, prevState) => {
+  // Only save when significant data changes, not UI state
+  const shouldSave =
+    state.keyData !== prevState.keyData ||
+    state.device !== prevState.device ||
+    state.gameTitle !== prevState.gameTitle ||
+    state.themeId !== prevState.themeId ||
+    state.randomPalette !== prevState.randomPalette ||
+    state.zones !== prevState.zones ||
+    state.analogNames !== prevState.analogNames ||
+    state.showNumbers !== prevState.showNumbers ||
+    state.showGloss !== prevState.showGloss ||
+    state.showLegend !== prevState.showLegend ||
+    state.lock !== prevState.lock ||
+    state.grid !== prevState.grid ||
+    state.invert !== prevState.invert ||
+    state.snap !== prevState.snap;
+
+  if (shouldSave) {
+    // Mark as having unsaved changes
+    if (!state.hasUnsavedChanges) {
+      useStore.setState({ hasUnsavedChanges: true });
+    }
+
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          keyData: state.keyData,
+          device: state.device,
+          gameTitle: state.gameTitle,
+          themeId: state.themeId,
+          randomPalette: state.randomPalette,
+          zones: state.zones,
+          analogNames: state.analogNames,
+          showNumbers: state.showNumbers,
+          showGloss: state.showGloss,
+          showLegend: state.showLegend,
+          lock: state.lock,
+          grid: state.grid,
+          invert: state.invert,
+          snap: state.snap,
+          savedAt: Date.now()
+        }));
+        // Mark as saved
+        useStore.setState({ hasUnsavedChanges: false });
+      } catch (e) {
+        console.warn('Auto-save failed:', e);
+      }
+    }, AUTOSAVE_DEBOUNCE_MS);
+  }
+});
+
+// Helper to cap history at MAX_HISTORY
+const capHistory = (history) => history.slice(-MAX_HISTORY);
 
 export const useDispatch = () => (action) => {
   const s = useStore.getState();
@@ -100,8 +194,7 @@ export const useDispatch = () => (action) => {
     case 'LOAD_LAYOUT': {
       useStore.setState({
         device: action.id,
-        keys: action.keys || {},
-        keyData: action.keys || {}, // keep both in sync for safety
+        keyData: action.keys || {},
         selection: [],
         history: [],
         future: []
@@ -151,9 +244,6 @@ export const useDispatch = () => (action) => {
       const nextKD = { ...(s.keyData || {}) };
 
       // Determine which fields to paste. If none specified, use the full list of supported attributes.
-      // Including `zone` here ensures that "Paste All" will copy the zone as well, which makes
-      // cloning behaviour intuitive. Note: coordinates and dimensions (x,y,w,h) are intentionally
-      // omitted so that pasting does not move keys around.
       const defaultFields = [
         'label', 'subtitle', 'sub', 'emoji', 'icon', 'color', 'zone',
         'imageUrl', 'image', 'imageMode', 'iconColor', 'iconSize'
@@ -176,7 +266,6 @@ export const useDispatch = () => (action) => {
               const val = clip.subtitle !== undefined ? clip.subtitle : clip.sub;
               if (val !== undefined) {
                 patch.subtitle = val;
-                // maintain legacy alias
                 patch.sub = val;
               }
               break;
@@ -230,7 +319,6 @@ export const useDispatch = () => (action) => {
               break;
             }
             default: {
-              // fallback: assign any matching property from clip
               if (clip[f] !== undefined) {
                 patch[f] = clip[f];
               }
@@ -238,7 +326,7 @@ export const useDispatch = () => (action) => {
             }
           }
         });
-        // Emoji/Icon exclusivity: don't keep both. If both are set and non-empty, favour the one being pasted.
+        // Emoji/Icon exclusivity
         if (patch.emoji) {
           patch.icon = undefined;
         }
@@ -250,9 +338,7 @@ export const useDispatch = () => (action) => {
 
       useStore.setState({
         keyData: nextKD,
-        // mirror legacy keys for compatibility
-        keys: { ...(s.keys || {}), ...nextKD },
-        history: [...s.history, before],
+        history: capHistory([...s.history, before]),
         future: []
       });
       break;
@@ -272,10 +358,7 @@ export const useDispatch = () => (action) => {
         ids.forEach((id) => {
           nextKD[id] = { ...(nextKD[id] || {}), ...(action.patch || {}) };
         });
-        useStore.setState({
-          keyData: nextKD,
-          keys: { ...(s.keys || {}), ...nextKD }
-        });
+        useStore.setState({ keyData: nextKD });
         break;
       }
 
@@ -286,8 +369,7 @@ export const useDispatch = () => (action) => {
       });
       useStore.setState({
         keyData: nextKD2,
-        keys: { ...(s.keys || {}), ...nextKD2 },
-        history: [...s.history, beforeKD],
+        history: capHistory([...s.history, beforeKD]),
         future: [],
         pendingBefore: null
       });
@@ -301,9 +383,8 @@ export const useDispatch = () => (action) => {
       const prev = history.pop();
       useStore.setState({
         keyData: prev,
-        keys: { ...(s.keys || {}), ...prev },
         history,
-        future: [s.keyData, ...s.future],
+        future: [s.keyData, ...s.future].slice(0, MAX_HISTORY),
         pendingBefore: null
       });
       break;
@@ -315,9 +396,8 @@ export const useDispatch = () => (action) => {
       const next = future.shift();
       useStore.setState({
         keyData: next,
-        keys: { ...(s.keys || {}), ...next },
         future,
-        history: [...s.history, s.keyData],
+        history: capHistory([...s.history, s.keyData]),
         pendingBefore: null
       });
       break;
@@ -326,15 +406,14 @@ export const useDispatch = () => (action) => {
     /* ---------- Movement (optional) ---------- */
     case 'MOVE_KEY': {
       if (s.lock) return; // respect lock: block key dragging only
-      const before = snap(s.keys);
-      const next = { ...s.keys };
+      const before = snap(s.keyData);
+      const next = { ...s.keyData };
       const id = action.id;
       const curr = next[id] || {};
       next[id] = { ...curr, x: action.pos.x, y: action.pos.y };
       useStore.setState({
-        keys: next,
-        keyData: { ...(s.keyData || {}), ...next },
-        history: [...s.history, before],
+        keyData: next,
+        history: capHistory([...s.history, before]),
         future: []
       });
       break;
@@ -346,10 +425,8 @@ export const useDispatch = () => (action) => {
       const zone = (action.zone || '').trim();
       if (!ids.length) return;
 
-      const beforeKeys = snap(s.keys);
-      const beforeZones = snap(s.zones);
-
-      const nextKeys = { ...s.keys };
+      const beforeKD = snap(s.keyData);
+      const nextKD = { ...s.keyData };
       const nextZones = { ...s.zones };
 
       // remove from all zones
@@ -361,24 +438,31 @@ export const useDispatch = () => (action) => {
       if (zone) nextZones[zone] = Array.from(new Set([...(nextZones[zone] || []), ...ids]));
 
       ids.forEach((id) => {
-        const curr = nextKeys[id] || {};
-        nextKeys[id] = { ...curr, zone: zone || undefined };
+        const curr = nextKD[id] || {};
+        nextKD[id] = { ...curr, zone: zone || undefined };
       });
 
       useStore.setState({
-        keys: nextKeys,
-        keyData: { ...(s.keyData || {}), ...nextKeys },
+        keyData: nextKD,
         zones: nextZones,
-        history: [...s.history, beforeKeys],
+        history: capHistory([...s.history, beforeKD]),
         future: []
       });
       break;
     }
 
+    /* ---------- Clear saved data ---------- */
+    case 'CLEAR_SAVED': {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {
+        console.warn('Failed to clear saved data:', e);
+      }
+      break;
+    }
 
     /* ---------- Optional: pipe zoom commands as events ---------- */
     case 'BOARD_ZOOM': {
-      // dispatch({type:'BOARD_ZOOM', cmd:'in'|'out'|'fit'|'reset'})
       try { window.dispatchEvent(new CustomEvent('board:zoom', { detail: { cmd: action.cmd } })); } catch {}
       break;
     }

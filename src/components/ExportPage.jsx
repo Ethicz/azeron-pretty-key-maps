@@ -4,16 +4,10 @@
 import React, { useMemo } from 'react';
 import { useStore } from '../lib/store.jsx';
 import { currentLayout } from '../layouts/index.js';
-import { THEMES, BASE } from '../lib/themes.js';
+import { THEMES } from '../lib/themes.js';
+import { DEFAULT_RAINBOW, PLACEHOLDERS, ANALOG_W, ANALOG_H } from '../lib/constants.js';
 
 const logoUrl = new URL('../logo.png', import.meta.url).href;
-
-/* constants */
-const DEFAULT_RAINBOW = [
-  BASE.red, BASE.orange, BASE.yellow, BASE.green,
-  BASE.teal, BASE.blue, BASE.indigo, BASE.violet
-];
-const ANALOG_W = 240, ANALOG_H = 280;
 
 /* theme helpers */
 function themePalette(themeId) {
@@ -22,17 +16,6 @@ function themePalette(themeId) {
   if (!t?.keys) return null;
   return t.keys.split(',').map(s => s.trim());
 }
-
-/* placeholders */
-const PLACEHOLDERS = [
-  'Move Forward','Move Left','Move Back','Move Right','Jump','Crouch','Sprint','Walk Toggle',
-  'Primary Fire','Secondary Fire','Aim / ADS','Reload','Melee','Use / Interact','Ping / Marker','Holster',
-  'Prev Weapon','Next Weapon','Switch Weapon','Grenade',
-  'Ability 1','Ability 2','Ability 3','Ultimate','Quick Slot 1','Quick Slot 2','Quick Slot 3','Quick Slot 4',
-  'Inventory','Map','Quest / Journal','Skills','Build / Craft','Photo Mode','Toggle Camera','Scoreboard',
-  'Push-to-Talk','Team Chat','Emote','Wheel / Radial','Prone','Slide / Dodge','Roll','Parry / Block',
-  'Cast Spell','Mount / Vehicle','Lean Left','Lean Right','Pause / Menu','Settings'
-];
 
 /* legend data */
 function buildLegendEntries({ device, keyData, themeId, randomPalette, zones }) {

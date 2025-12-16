@@ -7,36 +7,26 @@
 // - Legend clamps to two lines with “+N more” popover (handled by ZoneLegend).
 
 import React, {
-  forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState
+  forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState, useCallback
 } from 'react';
 import { useStore, useDispatch } from '../lib/store.jsx'; // history commit on drag-end
 import { currentLayout } from '../layouts/index.js';
-import { THEMES, BASE } from '../lib/themes.js';
+import { THEMES } from '../lib/themes.js';
 import AnalogStick from './widgets/AnalogStick.jsx';
 import ZoneLegend from './ZoneLegend.jsx';
 import ContextMenu from './widgets/ContextMenu.jsx';
-
-const DEFAULT_RAINBOW = [
-  BASE.red, BASE.orange, BASE.yellow, BASE.green,
-  BASE.teal, BASE.blue, BASE.indigo, BASE.violet
-];
-
-const PLACEHOLDERS = [
-  'Move Forward','Move Left','Move Back','Move Right','Jump','Crouch','Sprint','Walk Toggle',
-  'Primary Fire','Secondary Fire','Aim / ADS','Reload','Melee','Use / Interact','Ping / Marker','Holster',
-  'Prev Weapon','Next Weapon','Switch Weapon','Grenade',
-  'Ability 1','Ability 2','Ability 3','Ultimate','Quick Slot 1','Quick Slot 2','Quick Slot 3','Quick Slot 4',
-  'Inventory','Map','Quest / Journal','Skills','Build / Craft','Photo Mode','Toggle Camera','Scoreboard',
-  'Push-to-Talk','Team Chat','Emote','Wheel / Radial','Prone','Slide / Dodge','Roll','Parry / Block',
-  'Cast Spell','Mount / Vehicle','Lean Left','Lean Right','Pause / Menu','Settings'
-];
-
-const GRID_STEP = 20;
-const DEF_W = 100, DEF_H = 140;
-const ANALOG_W = 240, ANALOG_H = 280;
+import {
+  DEFAULT_RAINBOW,
+  PLACEHOLDERS,
+  GRID_STEP,
+  DEFAULT_KEY_W as DEF_W,
+  DEFAULT_KEY_H as DEF_H,
+  ANALOG_W,
+  ANALOG_H,
+  AVG_CHAR_WIDTH as AVG_CHAR
+} from '../lib/constants.js';
 
 /* label fit (single-line first; two-line fallback, no mid-word breaks) */
-const AVG_CHAR = 0.58; // em/char heuristic
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const capacityFor = (px, fontPx) => Math.max(1, Math.floor(px / (AVG_CHAR * fontPx)));
 
@@ -419,7 +409,7 @@ const BoardCanvas = forwardRef(function BoardCanvas(_, ref) {
     if (!drag) return;
 
     const st = useStore.getState();
-    const live = st.keyData?.[drag.id] || st.keys?.[drag.id] || {};
+    const live = st.keyData?.[drag.id] || {};
     const x = Number.isFinite(live.x) ? live.x : drag.ox;
     const y = Number.isFinite(live.y) ? live.y : drag.oy;
 
@@ -452,6 +442,71 @@ const BoardCanvas = forwardRef(function BoardCanvas(_, ref) {
       window.removeEventListener('keyup', onUp);
     };
   }, []);
+
+  // ---------- Keyboard navigation for key selection ----------
+  useEffect(() => {
+    const selectableKeys = merged.filter(k => !k.blank && !k.analog);
+
+    const onKeyDown = (e) => {
+      // Don't interfere with input fields
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      const currentSelection = useStore.getState().selection || [];
+      if (!currentSelection.length && !['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
+
+      // If no selection but arrow key pressed, select first key
+      if (!currentSelection.length) {
+        if (selectableKeys.length > 0) {
+          e.preventDefault();
+          useStore.setState({ selection: [selectableKeys[0].id] });
+        }
+        return;
+      }
+
+      const currentIdx = selectableKeys.findIndex(k => k.id === currentSelection[0]);
+      if (currentIdx < 0) return;
+
+      let nextIdx = currentIdx;
+      const cols = 5; // Approximate number of columns for navigation
+
+      switch (e.key) {
+        case 'ArrowRight':
+          nextIdx = Math.min(selectableKeys.length - 1, currentIdx + 1);
+          break;
+        case 'ArrowLeft':
+          nextIdx = Math.max(0, currentIdx - 1);
+          break;
+        case 'ArrowDown':
+          nextIdx = Math.min(selectableKeys.length - 1, currentIdx + cols);
+          break;
+        case 'ArrowUp':
+          nextIdx = Math.max(0, currentIdx - cols);
+          break;
+        case 'Escape':
+          useStore.setState({ selection: [] });
+          e.preventDefault();
+          return;
+        default:
+          return;
+      }
+
+      if (nextIdx !== currentIdx) {
+        e.preventDefault();
+        const nextId = selectableKeys[nextIdx].id;
+        if (e.shiftKey) {
+          // Add to selection with shift
+          const newSelection = new Set(currentSelection);
+          newSelection.add(nextId);
+          useStore.setState({ selection: Array.from(newSelection) });
+        } else {
+          useStore.setState({ selection: [nextId] });
+        }
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [merged]);
 
   // ---------- Right-click menu vs pan behavior ----------
   function openContextAt(e, keyId = null) {
@@ -611,16 +666,15 @@ const BoardCanvas = forwardRef(function BoardCanvas(_, ref) {
     if (!ok) return;
 
     const st = useStore.getState();
-    const before = JSON.parse(JSON.stringify(st.keys || {}));
-    const next   = { ...(st.keys || {}) };
+    const before = JSON.parse(JSON.stringify(st.keyData || {}));
+    const next   = { ...(st.keyData || {}) };
     baseKeys.forEach((bk) => {
       const w = bk.analog ? ANALOG_W : (bk.w ?? DEF_W);
       const h = bk.analog ? ANALOG_H : (bk.h ?? DEF_H);
       next[bk.id] = { ...(next[bk.id] || {}), x: bk.x ?? 0, y: bk.y ?? 0, w, h };
     });
     useStore.setState({
-      keys: next,
-      keyData: { ...(st.keyData || {}), ...next },
+      keyData: next,
       history: [...(st.history || []), before],
       future: []
     });

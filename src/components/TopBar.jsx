@@ -4,16 +4,13 @@ import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { useStore, useDispatch } from '../lib/store.jsx';
 import { LAYOUTS } from '../layouts/index.js';
-import { THEMES, BASE } from '../lib/themes.js';
+import { THEMES } from '../lib/themes.js';
 import { downloadPNG } from '../lib/exportImage.js';
+import { downloadPDF } from '../lib/exportPdf.js';
 import ProjectSettings from './ProjectSettings.jsx';
 import ExportPage from './ExportPage.jsx';
 import logo from '../logo.png';
-
-const DEFAULT_RAINBOW = [
-  BASE.red, BASE.orange, BASE.yellow, BASE.green,
-  BASE.teal, BASE.blue, BASE.indigo, BASE.violet
-];
+import { DEFAULT_RAINBOW } from '../lib/constants.js';
 
 // helpers for listing devices and themes, building palettes, and sanitising titles
 function listDevices() {
@@ -168,6 +165,41 @@ export default function TopBar({ isMobile=false }) {
     } catch (err) {
       console.error(err);
       alert('Export failed: page not rendered.');
+    } finally {
+      root.unmount();
+      container.remove();
+    }
+  }
+
+  /* PDF export */
+  async function runExportPDF() {
+    const state = useStore.getState();
+    const title = safeTitle(state.gameTitle || 'Untitled');
+    const dev   = state.device || 'Device';
+    const fileName = `${title}_${dev}`;
+
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.left = '-100000px';
+    container.style.top = '0';
+    container.style.zIndex = '-1';
+    document.body.appendChild(container);
+
+    const root = createRoot(container);
+    root.render(
+      <div id="export-mount">
+        <ExportPage mode="ui" page="letter" orientation="landscape" />
+      </div>
+    );
+
+    try {
+      const pageEl = await waitForNode(container, '[data-export-page-root]');
+      await waitForFonts();
+      await waitForImages(pageEl);
+      await downloadPDF(pageEl, fileName);
+    } catch (err) {
+      console.error(err);
+      alert('PDF export failed.');
     } finally {
       root.unmount();
       container.remove();
@@ -350,6 +382,12 @@ export default function TopBar({ isMobile=false }) {
             <button className="btn" onClick={() => runExport('export-transparent')}>Transparent PNG</button>
             <button className="btn" onClick={() => runExport('export-ui')}>UI PNG</button>
             <button className="btn" onClick={() => runExport('export-print')}>Print-safe PNG</button>
+          </div>
+        </div>
+        <div className="group">
+          <h3>PDF</h3>
+          <div className="row">
+            <button className="btn" onClick={runExportPDF}>Export PDF</button>
           </div>
         </div>
         <div className="group">
@@ -540,9 +578,30 @@ export default function TopBar({ isMobile=false }) {
           >
             <MenuItem active={!themeId} onClick={() => onPickTheme(null)}>Custom</MenuItem>
             <hr />
-            {(THEMES || []).map(t => (
-              <MenuItem key={t.id} active={t.id === themeId} onClick={() => onPickTheme(t.id)}>{t.name}</MenuItem>
-            ))}
+            {(THEMES || []).map(t => {
+              const swatches = t.keys ? t.keys.split(',').slice(0, 5).map(c => c.trim()) : [];
+              return (
+                <MenuItem key={t.id} active={t.id === themeId} onClick={() => onPickTheme(t.id)}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
+                    <span style={{ display: 'flex', gap: 2 }}>
+                      {swatches.map((color, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: 3,
+                            background: color,
+                            border: '1px solid rgba(255,255,255,0.2)'
+                          }}
+                        />
+                      ))}
+                    </span>
+                    <span>{t.name}</span>
+                  </span>
+                </MenuItem>
+              );
+            })}
           </DesktopDropdown>
 
           <DesktopDropdown
@@ -554,6 +613,7 @@ export default function TopBar({ isMobile=false }) {
             <MenuItem onClick={() => runExport('export-transparent')}>Transparent PNG</MenuItem>
             <MenuItem onClick={() => runExport('export-ui')}>UI PNG</MenuItem>
             <MenuItem onClick={() => runExport('export-print')}>Print-safe PNG</MenuItem>
+            <MenuItem onClick={runExportPDF}>Export PDF</MenuItem>
             <hr />
             <MenuItem onClick={exportJSON}>Export Project JSON</MenuItem>
             <MenuItem onClick={() => projectFileRef.current?.click()}>
