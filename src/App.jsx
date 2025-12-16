@@ -23,6 +23,20 @@ export default function App() {
   const selection = useStore(st => st.selection || []);
   const gridOn = useStore(st => st.grid !== false);
   const isMobileInspectorOpen = useStore(st => !!st.isMobileInspectorOpen);
+  const hasUnsavedChanges = useStore(st => st.hasUnsavedChanges);
+
+  // Warn user before leaving with unsaved changes
+  useEffect(() => {
+    const handler = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = ''; // Required for Chrome
+        return '';
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasUnsavedChanges]);
 
   // Ensure all mobile sheets/drawers start closed and don't collide
   useEffect(() => {

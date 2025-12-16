@@ -4,12 +4,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../lib/store.jsx';
 import { currentLayout } from '../layouts/index.js';
-import { THEMES, BASE } from '../lib/themes.js';
-
-const DEFAULT_RAINBOW = [
-  BASE.red, BASE.orange, BASE.yellow, BASE.green,
-  BASE.teal, BASE.blue, BASE.indigo, BASE.violet
-];
+import { THEMES } from '../lib/themes.js';
+import { DEFAULT_RAINBOW } from '../lib/constants.js';
 
 function themePalette(themeId) {
   if (!themeId) return null;
