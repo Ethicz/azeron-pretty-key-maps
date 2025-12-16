@@ -222,11 +222,62 @@ img{ max-width:100%; display:block; }
 .key-tile .label{ font-weight:700; color:#fff; text-shadow:0 1px 0 rgba(0,0,0,.45); word-break:break-word; line-height:1.1; }
 .key-tile .subtitle{ font-size:12px; opacity:.9; margin-top:4px; word-break:break-word; }
 
-/* Selection ring */
+/* Selection ring - Enhanced visual feedback */
+.key-tile[data-selected="true"]{
+  filter: brightness(1.25);
+  transform: scale(1.03);
+  z-index: 100;
+}
 .key-tile[data-selected="true"]::after{
   content:"";
-  position:absolute; inset:-3px; border-radius:21px; pointer-events:none;
-  box-shadow: 0 0 0 2px var(--ring-strong), 0 0 24px var(--ring-glow);
+  position:absolute; inset:-4px; border-radius:22px; pointer-events:none;
+  box-shadow:
+    0 0 0 3px var(--ring-strong),
+    0 0 20px 4px var(--ring-glow),
+    0 0 40px 8px rgba(122,160,255,0.35);
+  animation: selection-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes selection-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 3px var(--ring-strong),
+      0 0 20px 4px var(--ring-glow),
+      0 0 40px 8px rgba(122,160,255,0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px var(--ring-strong),
+      0 0 30px 8px var(--ring-glow),
+      0 0 60px 16px rgba(122,160,255,0.5);
+  }
+}
+
+/* Pressed key - Live mode visual feedback */
+.key-tile[data-pressed="true"]{
+  filter: brightness(1.5) saturate(1.2);
+  transform: scale(0.96);
+  z-index: 50;
+}
+.key-tile[data-pressed="true"]::before{
+  content:"";
+  position:absolute; inset:-2px; border-radius:20px; pointer-events:none;
+  background: rgba(255,255,255,0.15);
+  box-shadow:
+    inset 0 0 20px rgba(255,255,255,0.4),
+    0 0 25px 5px rgba(255,255,255,0.3);
+  animation: press-glow 0.15s ease-out;
+}
+
+@keyframes press-glow {
+  0% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* number pill */

@@ -70,7 +70,8 @@ export default function Inspector() {
       icon: overlay.icon ?? baseKey.icon ?? '',
       // NEW icon styling fields (with sensible defaults)
       iconColor: overlay.iconColor ?? baseKey.iconColor ?? '#ffffff',
-      iconSize: overlay.iconSize ?? baseKey.iconSize ?? 32
+      iconSize: overlay.iconSize ?? baseKey.iconSize ?? 32,
+      keyBinding: overlay.keyBinding ?? baseKey.keyBinding ?? ''
     };
   }, [baseKey, overlay, palette, baseIndex, placeholderText]);
 
@@ -88,6 +89,7 @@ export default function Inspector() {
     zone: true,
     label: false,
     subtitle: false,
+    keyBinding: false,
     emojiIcon: true,
     image: false,
     imageMode: true,
@@ -117,6 +119,7 @@ export default function Inspector() {
       if (kind === 'zone'       && !apply.zone)       return updateSingle(ids[0], patch);
       if (kind === 'label'      && !apply.label)      return updateSingle(ids[0], patch);
       if (kind === 'subtitle'   && !apply.subtitle)   return updateSingle(ids[0], patch);
+      if (kind === 'keyBinding' && !apply.keyBinding) return updateSingle(ids[0], patch);
       if (kind === 'emojiIcon'  && !apply.emojiIcon)  return updateSingle(ids[0], patch);
       if (kind === 'image'      && !apply.image)      return updateSingle(ids[0], patch);
       if (kind === 'imageMode'  && !apply.imageMode)  return updateSingle(ids[0], patch);
@@ -318,6 +321,7 @@ export default function Inspector() {
             <Chip on={apply.zone}         onToggle={() => setApplyFlag('zone')}>Zone</Chip>
             <Chip on={apply.label}        onToggle={() => setApplyFlag('label')}>Label</Chip>
             <Chip on={apply.subtitle}     onToggle={() => setApplyFlag('subtitle')}>Subtitle</Chip>
+            <Chip on={apply.keyBinding}   onToggle={() => setApplyFlag('keyBinding')}>Key Binding</Chip>
             <Chip on={apply.emojiIcon}    onToggle={() => setApplyFlag('emojiIcon')}>Emoji/Icon</Chip>
             <Chip on={apply.image}        onToggle={() => setApplyFlag('image')}>Image</Chip>
             <Chip on={apply.imageMode}    onToggle={() => setApplyFlag('imageMode')}>Image Mode</Chip>
@@ -347,6 +351,16 @@ export default function Inspector() {
                 value={active.subtitle}
                 placeholder="Subtitle"
                 onChange={(e) => updateWithRules({ subtitle: e.target.value }, 'subtitle')}
+              />
+            </div>
+            <div className="field">
+              <label>Key Binding</label>
+              <input
+                className="input"
+                value={active.keyBinding}
+                placeholder="e.g., W, Space, Shift"
+                onChange={(e) => updateWithRules({ keyBinding: e.target.value }, 'keyBinding')}
+                title="Physical key for live feedback (press key to see tile light up)"
               />
             </div>
             <div className="field">

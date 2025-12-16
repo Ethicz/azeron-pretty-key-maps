@@ -103,6 +103,9 @@ const initial = {
   mwDownId: 'MW_DOWN',
   analogNames: { up: 'W', left: 'A', down: 'S', right: 'D' },
 
+  /* ---------------------- Live mode: pressed keys ---------------------- */
+  pressedKeys: new Set(), // Set of currently pressed key codes (e.g., 'KeyW', 'Space')
+
   // Merge in any saved state from localStorage
   ...savedState,
 };

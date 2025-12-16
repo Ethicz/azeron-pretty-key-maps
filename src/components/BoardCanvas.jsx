@@ -193,6 +193,7 @@ const BoardCanvas = forwardRef(function BoardCanvas(_, ref) {
         icon:  (o.icon  ?? k.icon  ?? ''),
         iconColor: (o.iconColor ?? k.iconColor ?? '#ffffff'),
         iconSize: Number.isFinite(iconSizeMerged) ? iconSizeMerged : 28,
+        keyBinding: (o.keyBinding ?? k.keyBinding ?? ''),
         split: !!(o.split ?? k.split),
         idx,
         unassigned: isUnassigned
@@ -442,6 +443,96 @@ const BoardCanvas = forwardRef(function BoardCanvas(_, ref) {
       window.removeEventListener('keyup', onUp);
     };
   }, []);
+
+  // ---------- Live mode: track pressed physical keys ----------
+  const pressedKeys = useStore(st => st.pressedKeys) || new Set();
+
+  useEffect(() => {
+    // Map keyboard event.code/event.key to normalized key names users might enter
+    const normalizeKey = (e) => {
+      // Common mappings from event.code to user-friendly names
+      const codeMap = {
+        'KeyA': 'A', 'KeyB': 'B', 'KeyC': 'C', 'KeyD': 'D', 'KeyE': 'E',
+        'KeyF': 'F', 'KeyG': 'G', 'KeyH': 'H', 'KeyI': 'I', 'KeyJ': 'J',
+        'KeyK': 'K', 'KeyL': 'L', 'KeyM': 'M', 'KeyN': 'N', 'KeyO': 'O',
+        'KeyP': 'P', 'KeyQ': 'Q', 'KeyR': 'R', 'KeyS': 'S', 'KeyT': 'T',
+        'KeyU': 'U', 'KeyV': 'V', 'KeyW': 'W', 'KeyX': 'X', 'KeyY': 'Y',
+        'KeyZ': 'Z',
+        'Digit0': '0', 'Digit1': '1', 'Digit2': '2', 'Digit3': '3', 'Digit4': '4',
+        'Digit5': '5', 'Digit6': '6', 'Digit7': '7', 'Digit8': '8', 'Digit9': '9',
+        'Numpad0': 'Num0', 'Numpad1': 'Num1', 'Numpad2': 'Num2', 'Numpad3': 'Num3',
+        'Numpad4': 'Num4', 'Numpad5': 'Num5', 'Numpad6': 'Num6', 'Numpad7': 'Num7',
+        'Numpad8': 'Num8', 'Numpad9': 'Num9',
+        'Space': 'Space', 'Enter': 'Enter', 'Escape': 'Esc',
+        'Tab': 'Tab', 'Backspace': 'Backspace', 'Delete': 'Delete',
+        'ShiftLeft': 'Shift', 'ShiftRight': 'Shift',
+        'ControlLeft': 'Ctrl', 'ControlRight': 'Ctrl',
+        'AltLeft': 'Alt', 'AltRight': 'Alt',
+        'CapsLock': 'CapsLock',
+        'F1': 'F1', 'F2': 'F2', 'F3': 'F3', 'F4': 'F4', 'F5': 'F5', 'F6': 'F6',
+        'F7': 'F7', 'F8': 'F8', 'F9': 'F9', 'F10': 'F10', 'F11': 'F11', 'F12': 'F12',
+        'ArrowUp': 'Up', 'ArrowDown': 'Down', 'ArrowLeft': 'Left', 'ArrowRight': 'Right',
+        'Home': 'Home', 'End': 'End', 'PageUp': 'PageUp', 'PageDown': 'PageDown',
+        'Insert': 'Insert',
+        'Minus': '-', 'Equal': '=', 'BracketLeft': '[', 'BracketRight': ']',
+        'Backslash': '\\', 'Semicolon': ';', 'Quote': "'", 'Backquote': '`',
+        'Comma': ',', 'Period': '.', 'Slash': '/',
+      };
+      return codeMap[e.code] || e.key?.toUpperCase() || e.code;
+    };
+
+    const onKeyDown = (e) => {
+      // Don't track in input fields
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      const key = normalizeKey(e);
+      const current = useStore.getState().pressedKeys;
+      if (!current.has(key)) {
+        const next = new Set(current);
+        next.add(key);
+        useStore.setState({ pressedKeys: next });
+      }
+    };
+
+    const onKeyUp = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      const key = normalizeKey(e);
+      const current = useStore.getState().pressedKeys;
+      if (current.has(key)) {
+        const next = new Set(current);
+        next.delete(key);
+        useStore.setState({ pressedKeys: next });
+      }
+    };
+
+    // Clear all pressed keys when window loses focus
+    const onBlur = () => {
+      useStore.setState({ pressedKeys: new Set() });
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
+    };
+  }, []);
+
+  // Helper to check if a key tile's binding matches any pressed key
+  const isKeyPressed = useCallback((k) => {
+    if (!pressedKeys || pressedKeys.size === 0) return false;
+    // Check keyBinding field first, then subtitle as fallback
+    const binding = (k.keyBinding || k.subtitle || '').trim().toUpperCase();
+    if (!binding) return false;
+    // Check if any pressed key matches (case insensitive)
+    for (const pressed of pressedKeys) {
+      if (pressed.toUpperCase() === binding) return true;
+    }
+    return false;
+  }, [pressedKeys]);
 
   // ---------- Keyboard navigation for key selection ----------
   useEffect(() => {
@@ -1043,6 +1134,7 @@ const BoardCanvas = forwardRef(function BoardCanvas(_, ref) {
           const left = invert ? (stageW - (k.x + k.w)) : k.x;
           const top  = k.y;
           const sel = isSelected(k.id);
+          const pressed = isKeyPressed(k);
           const z = (dragId === k.id) ? 1000 : (sel ? 10 : 1);
 
           const isMW = String(k.id) === mwId;
@@ -1060,6 +1152,7 @@ const BoardCanvas = forwardRef(function BoardCanvas(_, ref) {
               key={k.id}
               data-key-id={k.id}
               data-selected={sel ? 'true' : 'false'}
+              data-pressed={pressed ? 'true' : 'false'}
               className="key-tile"
               style={{
                 position:'absolute', left, top, width:k.w, height:k.h, zIndex:z,
